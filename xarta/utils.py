@@ -1,0 +1,54 @@
+from urllib.request import urlopen
+import json
+import requests
+import os
+import xmltodict
+
+TEST_REF = '1801.05805'
+open_command = 'open '
+ARXIV_CATEGORIES = {'hep-ph', 'hep-th', 'hep-ex'}
+
+def is_arxiv_category(s):
+    return s in ARXIV_CATEGORIES
+
+def is_arxiv_ref(s):
+    """ Returns True if s is a valid arXiv reference. """
+    # TODO Fill this out more...
+    x = s.split('.')
+    return len(x[0]) == 4 and len(x[1]) == 5
+
+def arxiv_open(ref, pdf=False):
+    if is_arxiv_category(ref):
+        os.system(open_command + ' https://arxiv.org/list/'+ref+'/new')
+    elif is_arxiv_ref(ref):
+        if pdf:
+            os.system(open_command + ' https://arxiv.org/pdf/'+ref+'.pdf')
+        else:
+            os.system(open_command + ' https://arxiv.org/abs/'+ref)
+    else:
+        raise ValueError('`xarta open` received an invalid <ref>.')
+    # data = get_arxiv_data(ref)
+    # msg = "Opening '" + data['title'] + "'"
+    # if pdf:
+    #     link = data['links']
+    #     msg += ' [pdf]'
+    # else:
+    #     link = data['id']
+    # os.system(open_command + link)
+    # print(msg)
+    return None
+
+def get_arxiv_data(ref):
+    url = 'http://export.arxiv.org/api/query?search_query=all:'+ref+'&start=0&max_results=1'
+    xml_data = urlopen(url).read().decode('utf-8')
+    data = xmltodict.parse(xml_data)['feed']['entry']
+    string_format = lambda s: s.replace('\r', '').replace('\n', '').replace('  ', ' ')
+    dic = {'id': data['id'],
+           # 'links': [link['@href'] for link in data['link']],
+           'title': string_format(data['title']),
+           'abstract': data['summary'],
+           'authors': [auth['name'] for auth in data['author']],
+           'comments': data['arxiv:comment']['#text'],
+           'category': data['arxiv:primary_category']['@term']
+    }
+    return dic
