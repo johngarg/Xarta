@@ -3,15 +3,23 @@ xarta
 
 Usage:
   xarta hello
+  xarta open <ref> [--pdf]
+  xarta add <ref> [--tag=<tg>]...
   xarta -h | --help
   xarta --version
 
 Options:
   -h --help                         Show this screen.
   --version                         Show version.
+  --pdf                             Open the pdf.
+  --tag=<tg>                        Add tag metadata to the database entry.
 
 Examples:
   xarta hello
+  xarta open 1704.05849
+  xarta open 1704.05849 --pdf
+  xarta open hep-ph
+  xarta add 1704.05849 --tag leptoquarks --tag neutrino-mass --tag flavour-anomalies
 
 Help:
   For help using this tool, please open an issue on the Github repository:
