@@ -1,23 +1,23 @@
 import sqlite3
 import os
 
-DATABASE_DIR = '/Users/johngargalionis/Dropbox/.xarta.d/'
-DATABASE = 'db.sqlite'
-DATABASE_PATH = DATABASE_DIR + DATABASE
+HOME = os.path.expanduser('~')
 
 def create_connection(database):
-    """ create a database connection to a SQLite database """
-    try:
-        conn = sqlite3.connect(database)
-        print('Creating new database at ' + database)
-    except sqlite3.Error as e:
-        print(e)
-    finally:
-        conn.close()
+    """ Create a database connection to a SQLite database. """
+    print('Creating new database at ' + database + '...')
+    conn = sqlite3.connect(database)
+    conn.close()
+    with open(HOME+'/.xarta', 'w') as xarta_file:
+        xarta_file.write(database)
 
-if DATABASE not in os.listdir(DATABASE_DIR):
-    print(DATABASE_PATH+' not found...')
-    create_connection(DATABASE_PATH)
-
-# conn = sqlite3.connect(DATABASE)
-# c = conn.cursor()
+def initialise_database(database):
+    """ Initialise database with empty table. """
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+    print('Initialising database...')
+    c.execute('''CREATE TABLE papers
+                 (id text, title text, abstract text, authors text, category text)''')
+    conn.commit()
+    conn.close()
+    print('Database initialised!')

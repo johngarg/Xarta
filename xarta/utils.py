@@ -4,9 +4,8 @@ import requests
 import os
 import xmltodict
 
-TEST_REF = '1801.05805'
-open_command = 'open '
-ARXIV_CATEGORIES = {'hep-ph', 'hep-th', 'hep-ex'}
+open_command = 'open ' # TODO make more general, will only work on mac and with default browser
+ARXIV_CATEGORIES = {'hep-ph', 'hep-th', 'hep-ex'} # add whatever you like here...
 
 def is_arxiv_category(s):
     return s in ARXIV_CATEGORIES
@@ -49,6 +48,5 @@ def get_arxiv_data(ref):
            'abstract': data['summary'],
            'authors': [auth['name'] for auth in data['author']],
            'comments': data['arxiv:comment']['#text'],
-           'category': data['arxiv:primary_category']['@term']
-    }
+           'category': data['arxiv:primary_category']['@term']}
     return dic

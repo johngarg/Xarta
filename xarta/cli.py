@@ -3,6 +3,7 @@ xarta
 
 Usage:
   xarta hello
+  xarta init <database-location>
   xarta open <ref> [--pdf]
   xarta add <ref> [--tag=<tg>]...
   xarta -h | --help
