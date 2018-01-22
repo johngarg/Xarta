@@ -2,7 +2,7 @@
 
 
 from .base import Base
-from ..database import create_connection, initialise_database
+from ..database import PaperDatabase
 
 class Init(Base):
     """ Initialise database """
@@ -20,7 +20,8 @@ class Init(Base):
         if 'db.sqlite3' not in os.listdir(database_location):
             sql_command = 'sqlite3 ' + database_path + ' ";"'
             os.system(sql_command)
-            create_connection(database_path)
-            initialise_database(database_path)
+            paper_database = PaperDatabase(database_path)
+            paper_database.create_connection()
+            paper_database.initialise_database()
         else:
             print(database_path + ' already exists.')
