@@ -42,11 +42,24 @@ def get_arxiv_data(ref):
     xml_data = urlopen(url).read().decode('utf-8')
     data = xmltodict.parse(xml_data)['feed']['entry']
     string_format = lambda s: s.replace('\r', '').replace('\n', '').replace('  ', ' ')
+    authors = [auth['name'] for auth in data['author']] if isinstance(data['author'], list) else [data['author']['name']]
     dic = {'id': data['id'],
            # 'links': [link['@href'] for link in data['link']],
            'title': string_format(data['title']),
            'abstract': data['summary'],
-           'authors': [auth['name'] for auth in data['author']],
+           'authors': authors,
            'comments': data['arxiv:comment']['#text'],
            'category': data['arxiv:primary_category']['@term']}
     return dic
+
+def list_to_string(lst):
+    """
+    Takes a list of items (strings) and returns a string of items separated by semicolons.
+    e.g.
+        list_to_string(['John', 'Alice'])
+            #=> 'John; Alice'
+    """
+    lst_string = ''
+    for item in lst:
+        lst_string += item + '; '
+    return lst_string[:-2]
