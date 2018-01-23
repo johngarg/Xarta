@@ -4,3 +4,6 @@ todo.org
 *.egg-info
 build
 dist
+__pycache__/*
+xarta/__pycache__/*
+xarta/commands/__pycache__/*
