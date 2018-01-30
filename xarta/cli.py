@@ -6,6 +6,9 @@ Usage:
   xarta init <database-location>
   xarta open <ref> [--pdf]
   xarta add <ref> [--tag=<tg>]...
+  xarta delete <ref>
+  xarta browse [--author=<auth>] [--tag=<tg>] [--title=<ttl>] [--ref=<ref>]
+  xarta export <export-path> [--bibtex]
   xarta -h | --help
   xarta --version
 
@@ -13,7 +16,10 @@ Options:
   -h --help                         Show this screen.
   --version                         Show version.
   --pdf                             Open the pdf.
-  --tag=<tg>                        Add tag metadata to the database entry.
+  --tag=<tg>                        Tag metadata of the database entry.
+  --author=<auth>                   Author metadata of the database entry.
+  --title=<ttl>                     Title metadata of the database entry.
+  --bibtex                          Option to export bibliography to bibtex file.
 
 Examples:
   xarta hello
@@ -21,6 +27,9 @@ Examples:
   xarta open 1704.05849 --pdf
   xarta open hep-ph
   xarta add 1704.05849 --tag leptoquarks --tag neutrino-mass --tag flavour-anomalies
+  xarta remove 1704.05849
+  xarta browse --tag neutrino-mass
+  xarta export ~/Desktop/ --bibtex
 
 Help:
   For help using this tool, please open an issue on the Github repository:
@@ -42,7 +51,7 @@ def main():
 
     # Here we'll try to dynamically match the command the user is trying to run
     # with a pre-defined command class we've already created.
-    for (k, v) in options.items(): 
+    for (k, v) in options.items():
         if hasattr(xarta.commands, k) and v:
             module = getattr(xarta.commands, k)
             xarta.commands = getmembers(module, isclass)
