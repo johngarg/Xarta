@@ -63,3 +63,9 @@ def list_to_string(lst):
     for item in lst:
         lst_string += item + '; '
     return lst_string[:-2]
+
+def expand_tag(tag, dic):
+    if tag[0] == '#':
+        return dic[tag[1:]]
+    else:
+        return tag
