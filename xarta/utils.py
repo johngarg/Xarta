@@ -14,7 +14,7 @@ def is_arxiv_ref(s):
     """ Returns True if s is a valid arXiv reference. """
     # TODO Fill this out more...
     x = s.split('.')
-    return len(x[0]) == 4 and len(x[1]) == 5
+    return len(x[0]) == 4
 
 def arxiv_open(ref, pdf=False):
     if is_arxiv_category(ref):
