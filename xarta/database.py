@@ -34,7 +34,7 @@ class PaperDatabase():
         c = conn.cursor()
         data = get_arxiv_data(paper_id)
         author_string = list_to_string(data['authors'])
-        tags = [expand_tag(tag, dic) for tag in tags]
+        tags = [expand_tag(tag, data) for tag in tags]
         tags = list_to_string(tags)
 
         insert_command = f'''INSERT INTO papers (id, title, authors, category, tags) VALUES ("{paper_id}", "{data['title']}", "{author_string}", "{data['category']}", "{tags}");'''
@@ -56,14 +56,24 @@ class PaperDatabase():
         conn.close()
 
     # def query_papers(self, paper_id, author, tag, title):
-    def query_papers(self):
+    def query_papers(self, silent=False):
         """ Query information about a paper in the databse. """
-        from tabulate import tabulate
+        #from tabulate import tabulate
 
         conn = sqlite3.connect(self.path)
         c = conn.cursor()
         query_command = f'''SELECT * FROM papers;'''
         query_results = c.execute(query_command)
         all_rows = c.fetchall()
-        print(tabulate(all_rows, headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'], floatfmt=".5f"))
+        to_be_printed = [[(c if len(c) < 40 else c[:37] + "...")
+                          for c in row]
+                         for row in all_rows]
+        really_to_be_printed = [['arxiv:'+row[0], row[1], row[2], row[3], row[4]] for row in to_be_printed]
+        if not silent:
+            from tabulate import tabulate
+            print(
+                tabulate(really_to_be_printed,
+                         headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
+                         tablefmt="simple"))
         conn.close()
+        return all_rows
