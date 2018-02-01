@@ -14,7 +14,7 @@ def is_arxiv_ref(s):
     """ Returns True if s is a valid arXiv reference. """
     # TODO Fill this out more...
     x = s.split('.')
-    return len(x[0]) == 4
+    return len(x[0]) == 4 or x[0].split('/') != 0
 
 def arxiv_open(ref, pdf=False):
     if is_arxiv_category(ref):
@@ -38,15 +38,13 @@ def arxiv_open(ref, pdf=False):
     return None
 
 def get_arxiv_data(ref):
-    url = 'http://export.arxiv.org/api/query?search_query=all:'+ref+'&start=0&max_results=1'
+    url = 'http://export.arxiv.org/api/query?id_list=' + ref
     xml_data = urlopen(url).read().decode('utf-8')
     data = xmltodict.parse(xml_data)['feed']['entry']
     string_format = lambda s: s.replace('\r', '').replace('\n', '').replace('  ', ' ')
     authors = [auth['name'] for auth in data['author']] if isinstance(data['author'], list) else [data['author']['name']]
     dic = {'id': data['id'],
-           # 'links': [link['@href'] for link in data['link']],
            'title': string_format(data['title']),
-           'abstract': data['summary'],
            'authors': authors,
            'comments': data['arxiv:comment']['#text'],
            'category': data['arxiv:primary_category']['@term']}
