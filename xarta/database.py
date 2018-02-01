@@ -58,8 +58,6 @@ class PaperDatabase():
     # def query_papers(self, paper_id, author, tag, title):
     def query_papers(self, silent=False):
         """ Query information about a paper in the databse. """
-        #from tabulate import tabulate
-
         conn = sqlite3.connect(self.path)
         c = conn.cursor()
         query_command = f'''SELECT * FROM papers;'''
@@ -68,9 +66,11 @@ class PaperDatabase():
         to_be_printed = [[(c if len(c) < 40 else c[:37] + "...")
                           for c in row]
                          for row in all_rows]
-        really_to_be_printed = [['arxiv:'+row[0], row[1], row[2], row[3], row[4]] for row in to_be_printed]
         if not silent:
             from tabulate import tabulate
+            # TODO make this code look prettier
+            really_to_be_printed = [['arXiv:'+row[0], row[1], row[2], row[3], row[4]]
+                                    for row in to_be_printed]
             print(
                 tabulate(really_to_be_printed,
                          headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
