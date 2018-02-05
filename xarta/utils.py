@@ -46,7 +46,7 @@ def get_arxiv_data(ref):
     dic = {'id': data['id'],
            'title': string_format(data['title']),
            'authors': authors,
-           'comments': data['arxiv:comment']['#text'],
+           #'comments': data['arxiv:comment']['#text'],
            'category': data['arxiv:primary_category']['@term']}
     return dic
 
