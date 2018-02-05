@@ -91,7 +91,7 @@ class PaperDatabase():
             elif author is not None and author in row[2]:
                 to_be_printed.append(row)
                 continue
-            elif category is not None and tag in row[3]:
+            elif category is not None and category in row[3]:
                 to_be_printed.append(row)
                 continue
             # TODO This will only work for one tag now... FIX
