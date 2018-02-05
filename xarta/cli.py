@@ -7,7 +7,7 @@ Usage:
   xarta open <ref> [--pdf]
   xarta add <ref> [--tag=<tg>]...
   xarta delete <ref>
-  xarta browse [--author=<auth>] [--tag=<tg>] [--title=<ttl>] [--ref=<ref>]
+  xarta browse [--all] [--author=<auth>] [--tag=<tg>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>]
   xarta export <export-path> [--bibtex]
   xarta -h | --help
   xarta --version

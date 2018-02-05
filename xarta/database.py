@@ -77,3 +77,37 @@ class PaperDatabase():
                          tablefmt="simple"))
         conn.close()
         return all_rows
+
+    def query_papers_contains(self, paper_id, title, author, category, tag, silent=False):
+        library_data = self.query_papers(silent=True)
+        to_be_printed = []
+        for row in library_data:
+            if paper_id is not None and paper_id in row[0]:
+                to_be_printed.append(row)
+                continue
+            elif title is not None and title in row[1]:
+                to_be_printed.append(row)
+                continue
+            elif author is not None and author in row[2]:
+                to_be_printed.append(row)
+                continue
+            elif category is not None and tag in row[3]:
+                to_be_printed.append(row)
+                continue
+            # TODO This will only work for one tag now... FIX
+            elif tag != [] and tag[0] in row[4]: # TODO will need to write out entire string
+                to_be_printed.append(row)
+                continue
+
+        if not silent:
+            from tabulate import tabulate
+            r_to_be_printed = [[(c if len(c) < 40 else c[:37] + "...")
+                                for c in row]
+                               for row in to_be_printed]
+            rr_to_be_printed = [['arXiv:'+row[0], row[1], row[2], row[3], row[4]]
+                                for row in r_to_be_printed]
+            print(
+                tabulate(rr_to_be_printed,
+                         headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
+                         tablefmt="simple"))
+        return to_be_printed
