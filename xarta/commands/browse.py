@@ -20,7 +20,9 @@ class Browse(Base):
         ref = options['--ref']
         tag = options['--tag']
         author = options['--author']
+        category = options['--category']
         title = options['--title']
+        all_flag = options['--all']
 
         try:
            with open(HOME+'/.xarta', 'r') as xarta_file:
@@ -29,4 +31,7 @@ class Browse(Base):
             raise Exception('Something went wrong...') # TODO make this error more explicit
 
         paper_database = PaperDatabase(database_path)
-        paper_database.query_papers()
+        if all_flag:
+            paper_database.query_papers()
+        else:
+            paper_database.query_papers_contains(paper_id=ref, title=title, author=author, category=category, tag=tag)
