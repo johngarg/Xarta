@@ -1,6 +1,6 @@
 # Xarta
 
-A work-in-progress command-line tool for organising papers from the arXiv. 
+A work-in-progress command-line tool for organising papers from the arXiv.
 
 This is a lightweight tool that I use to organise my reading. Almost all of the papers I read are on the arXiv, and therefore there is no need for me to keep a local copy of my library on my machine. I want to add a similar interface to the CERN document server as well at some stage.
 
@@ -26,3 +26,5 @@ Usage:
   xarta -h | --help
   xarta --version
 ```
+
+Pronounce the "x" as a voiceless velar fricative or plosive, as you like.
