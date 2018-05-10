@@ -35,7 +35,7 @@ class RunTests(Command):
 setup(
     name = 'xarta',
     version = __version__,
-    description = 'A commandline-tool for organising papers from the arXiv.',
+    description = 'A command-line tool for organising papers from the arXiv.',
     long_description = long_description,
     url = 'https://github.com/johngarg/xarta',
     author = 'John Gargalionis',
