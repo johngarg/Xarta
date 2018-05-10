@@ -24,7 +24,6 @@ Options:
   --local                           Option to add an already locally saved file to database.
 
 Examples:
-  xarta hello
   xarta open 1704.05849
   xarta open 1704.05849 --pdf
   xarta open hep-ph
@@ -35,7 +34,7 @@ Examples:
 
 Help:
   For help using this tool, please open an issue on the Github repository:
-  https://github.com/johngarg/xarta
+  https://github.com/johngarg/Xarta
 """
 
 
