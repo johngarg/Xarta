@@ -43,6 +43,23 @@ class PaperDatabase():
         conn.commit()
         conn.close()
 
+
+    def add_local_paper(self, paper_id, tags, path, title='', authors=[]):
+        """ Add paper to database. """
+        conn = sqlite3.connect(self.path)
+        c = conn.cursor()
+        data = {'title': title, 'authors': authors, 'category': 'local'}
+        author_string = list_to_string(data['authors'])
+        tags = [expand_tag(tag, data) for tag in tags]
+        tags = list_to_string(tags)
+
+        insert_command = f'''INSERT INTO papers (id, title, authors, category, tags) VALUES ("{paper_id}", "{data['title']}", "{author_string}", "{data['category']}", "{tags}");'''
+        c.execute(insert_command)
+        print(f"{paper_id} added to database from {path}!")
+        conn.commit()
+        conn.close()
+
+
     def delete_paper(self, paper_id):
         """ Remove paper from database. """
 
@@ -63,7 +80,8 @@ class PaperDatabase():
         query_command = f'''SELECT * FROM papers;'''
         query_results = c.execute(query_command)
         all_rows = c.fetchall()
-        to_be_printed = [[(c if len(c) < 40 else c[:37] + "...")
+        l = 35
+        to_be_printed = [[(c if len(c) < l else c[:(l-3)] + "...")
                           for c in row]
                          for row in all_rows]
         if not silent:

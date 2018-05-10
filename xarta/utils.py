@@ -18,12 +18,12 @@ def is_arxiv_ref(s):
 
 def arxiv_open(ref, pdf=False):
     if is_arxiv_category(ref):
-        os.system(open_command + ' https://arxiv.org/list/'+ref+'/new')
+        os.system(open_command + ' https://arxiv.org/list/' + ref + '/new')
     elif is_arxiv_ref(ref):
         if pdf:
-            os.system(open_command + ' https://arxiv.org/pdf/'+ref+'.pdf')
+            os.system(open_command + ' https://arxiv.org/pdf/' + ref + '.pdf')
         else:
-            os.system(open_command + ' https://arxiv.org/abs/'+ref)
+            os.system(open_command + ' https://arxiv.org/abs/' + ref)
     else:
         raise ValueError('`xarta open` received an invalid <ref>.')
     # data = get_arxiv_data(ref)

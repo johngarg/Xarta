@@ -5,7 +5,7 @@ Usage:
   xarta hello
   xarta init <database-location>
   xarta open <ref> [--pdf]
-  xarta add <ref> [--tag=<tg>]...
+  xarta add <ref> [--tag=<tg>]... [--download] [--local]
   xarta delete <ref>
   xarta browse [--all] [--author=<auth>] [--tag=<tg>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>]
   xarta export <export-path> [--bibtex]
@@ -20,6 +20,8 @@ Options:
   --author=<auth>                   Author metadata of the database entry.
   --title=<ttl>                     Title metadata of the database entry.
   --bibtex                          Option to export bibliography to bibtex file.
+  --download                        Option to save file locally for offline reading.
+  --local                           Option to add an already locally saved file to database.
 
 Examples:
   xarta hello
