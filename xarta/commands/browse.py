@@ -28,4 +28,4 @@ class Browse(Base):
         if all_flag:
             paper_database.query_papers()
         else:
-            paper_database.query_papers_contains(paper_id=ref, title=title, author=author, category=category, tag=tag)
+            paper_database.query_papers_contains(paper_id=ref, title=title, author=author, category=category, tags=tag)
