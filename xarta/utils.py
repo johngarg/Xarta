@@ -23,7 +23,7 @@ def is_arxiv_category(s):
 def is_arxiv_ref(s):
     """ Returns True if s is a valid arXiv reference. """
     x = s.split('.')
-    return (len(x) == 2 and len(x[0]) == 4) or (len(x[0].split('/')) == 2) != 0
+    return (len(x) == 2 and len(x[0]) == 4) or (len(x[0].split('/')) == 2)
 
 def arxiv_open(ref, pdf=False):
     if is_arxiv_category(ref):
