@@ -113,7 +113,7 @@ class PaperDatabase():
                 to_be_printed.append(row)
                 continue
             # TODO This will only work for one tag now... FIX
-            elif tag != [] and tag[0] in row[4]: # TODO will need to write out entire string
+            elif tag is not None and tag != [] and tag[0] in row[4]: # TODO will need to write out entire string
                 to_be_printed.append(row)
                 continue
 
@@ -129,3 +129,17 @@ class PaperDatabase():
                          headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
                          tablefmt="simple"))
         return to_be_printed
+
+    def contains(self, ref):
+        """
+        Returns a boolean identifying if an entry with reference `ref` exists
+        within the database.
+        """
+        search_results = self.query_papers_contains(
+            paper_id=ref,
+            title=None,
+            author=None,
+            category=None,
+            tag=None,
+            silent=True)
+        return bool(search_results)

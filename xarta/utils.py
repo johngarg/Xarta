@@ -4,17 +4,26 @@ import requests
 import os
 import xmltodict
 
-open_command = 'open ' # TODO make more general, will only work on mac and with default browser
-ARXIV_CATEGORIES = {'hep-ph', 'hep-th', 'hep-ex'} # add whatever you like here...
+
+# TODO make more general, will only work on mac and with default browser
+open_command = 'open '
+
+# set of arxiv categories only used for opening the "new" page of results from
+# the command line
+ARXIV_CATEGORIES = {
+    'astro-ph', 'cond-mat', 'gr-qc', 'hep-ex', 'hep-lat', 'hep-ph', 'hep-th',
+    'math-ph', 'nlin', 'nucl-ex', 'nucl-th', 'physics', 'quant-ph', 'math',
+    'CoRR', 'q-bio', 'stat', 'eess', 'econ'
+}
 
 def is_arxiv_category(s):
     return s in ARXIV_CATEGORIES
 
+# TODO This is currently not very precise but does the job.
 def is_arxiv_ref(s):
     """ Returns True if s is a valid arXiv reference. """
-    # TODO Fill this out more...
     x = s.split('.')
-    return len(x[0]) == 4 or x[0].split('/') != 0
+    return (len(x) == 2 and len(x[0]) == 4) or (len(x[0].split('/')) == 2) != 0
 
 def arxiv_open(ref, pdf=False):
     if is_arxiv_category(ref):
@@ -26,33 +35,26 @@ def arxiv_open(ref, pdf=False):
             os.system(open_command + ' https://arxiv.org/abs/' + ref)
     else:
         raise ValueError('`xarta open` received an invalid <ref>.')
-    # data = get_arxiv_data(ref)
-    # msg = "Opening '" + data['title'] + "'"
-    # if pdf:
-    #     link = data['links']
-    #     msg += ' [pdf]'
-    # else:
-    #     link = data['id']
-    # os.system(open_command + link)
-    # print(msg)
     return None
 
 def get_arxiv_data(ref):
+    """ Returns a dictionary of data about the reference `ref`. """
     url = 'http://export.arxiv.org/api/query?id_list=' + ref
     xml_data = urlopen(url).read().decode('utf-8')
     data = xmltodict.parse(xml_data)['feed']['entry']
     string_format = lambda s: s.replace('\r', '').replace('\n', '').replace('  ', ' ')
-    authors = [auth['name'] for auth in data['author']] if isinstance(data['author'], list) else [data['author']['name']]
+    authors = [auth['name'] for auth in data['author']] \
+              if isinstance(data['author'], list) else [data['author']['name']]
     dic = {'id': data['id'],
            'title': string_format(data['title']),
            'authors': authors,
-           #'comments': data['arxiv:comment']['#text'],
            'category': data['arxiv:primary_category']['@term']}
     return dic
 
 def list_to_string(lst):
     """
-    Takes a list of items (strings) and returns a string of items separated by semicolons.
+    Takes a list of items (strings) and returns a string of items separated by
+    semicolons.
     e.g.
         list_to_string(['John', 'Alice'])
             #=> 'John; Alice'
@@ -67,3 +69,14 @@ def expand_tag(tag, dic):
         return dic[tag[1:]]
     else:
         return tag
+
+def read_xarta_file():
+    """
+    Read database location from ~/.xarta file and returns path as string.
+    """
+    HOME = os.path.expanduser('~')
+    try:
+        with open(HOME+'/.xarta', 'r') as xarta_file:
+            return xarta_file.readline()
+    except:
+        raise Exception(f'Could not read {HOME}/.xarta')

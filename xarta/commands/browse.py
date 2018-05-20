@@ -5,10 +5,9 @@ from json import dumps
 import os
 
 from .base import Base
-from ..utils import arxiv_open
+from ..utils import arxiv_open, read_xarta_file
 from ..database import PaperDatabase
 
-HOME = os.path.expanduser('~')
 
 # xarta browse [--author=<auth>] [--tag=<tg>] [--title=<ttl>] [--ref=<ref>]
 
@@ -24,12 +23,7 @@ class Browse(Base):
         title = options['--title']
         all_flag = options['--all']
 
-        try:
-           with open(HOME+'/.xarta', 'r') as xarta_file:
-               database_path = xarta_file.readline()
-        except:
-            raise Exception('Something went wrong...') # TODO make this error more explicit
-
+        database_path = read_xarta_file()
         paper_database = PaperDatabase(database_path)
         if all_flag:
             paper_database.query_papers()
