@@ -5,10 +5,9 @@ from json import dumps
 import os
 
 from .base import Base
-from ..utils import arxiv_open
+from ..utils import arxiv_open, read_xarta_file
 from ..database import PaperDatabase
 
-HOME = os.path.expanduser('~')
 
 class Add(Base):
     """ Add an arXiv paper and its metadata to the database. """
@@ -18,11 +17,10 @@ class Add(Base):
         ref = options['<ref>']
         tags = options['--tag']
 
-        try:
-           with open(HOME+'/.xarta', 'r') as xarta_file:
-               database_path = xarta_file.readline()
-        except:
-            raise Exception('Something went wrong...') # TODO make this error more explicit
-
+        database_path = read_xarta_file()
         paper_database = PaperDatabase(database_path)
-        paper_database.add_paper(paper_id=ref, tags=tags)
+
+        if paper_database.contains(ref):
+            raise Exception('This paper is already in the database.')
+        else:
+            paper_database.add_paper(paper_id=ref, tags=tags)
