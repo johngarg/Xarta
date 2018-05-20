@@ -72,7 +72,6 @@ class PaperDatabase():
         conn.commit()
         conn.close()
 
-    # def query_papers(self, paper_id, author, tag, title):
     def query_papers(self, silent=False):
         """ Query information about a paper in the databse. """
         conn = sqlite3.connect(self.path)
@@ -86,7 +85,6 @@ class PaperDatabase():
                          for row in all_rows]
         if not silent:
             from tabulate import tabulate
-            # TODO make this code look prettier
             really_to_be_printed = [['arXiv:'+row[0], row[1], row[2], row[3], row[4]]
                                     for row in to_be_printed]
             print(
@@ -96,7 +94,20 @@ class PaperDatabase():
         conn.close()
         return all_rows
 
-    def query_papers_contains(self, paper_id, title, author, category, tag, silent=False):
+    def query_papers_contains(self, paper_id, title, author, category, tags,
+                              silent=False):
+        """
+        Function to search and filter paper database. Returns a list of
+        tuples and (if `silent` is False) prints a table to the screen. Search
+        parameters connected by a logical OR, thus:
+           db.query_papers_contains(paper_id=None,
+                                    title=None,
+                                    author='Weinberg',
+                                    category='hep-th',
+                                    tags=[])
+        will return every paper in the database from 'hep-th' as well as those
+        by 'Weinberg'.
+        """
         library_data = self.query_papers(silent=True)
         to_be_printed = []
         for row in library_data:
@@ -112,10 +123,12 @@ class PaperDatabase():
             elif category is not None and category in row[3]:
                 to_be_printed.append(row)
                 continue
-            # TODO This will only work for one tag now... FIX
-            elif tag is not None and tag != [] and tag[0] in row[4]: # TODO will need to write out entire string
-                to_be_printed.append(row)
-                continue
+            elif tags is not None and tags != []:
+                added = False  # don't include the same paper twice
+                for tag in tags:
+                    if tag in row[4] and not added:
+                        to_be_printed.append(row)
+                        added = True
 
         if not silent:
             from tabulate import tabulate
@@ -140,6 +153,6 @@ class PaperDatabase():
             title=None,
             author=None,
             category=None,
-            tag=None,
+            tags=[],
             silent=True)
         return bool(search_results)
