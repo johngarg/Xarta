@@ -95,7 +95,7 @@ class PaperDatabase():
         return all_rows
 
     def query_papers_contains(self, paper_id, title, author, category, tags,
-                              silent=False):
+                              silent=False, select=False):
         """
         Function to search and filter paper database. Returns a list of
         tuples and (if `silent` is False) prints a table to the screen. Search
@@ -140,7 +140,9 @@ class PaperDatabase():
             print(
                 tabulate(rr_to_be_printed,
                          headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
-                         tablefmt="simple"))
+                         tablefmt="simple",
+                         showindex=(True if select else False)))
+
         return to_be_printed
 
     def contains(self, ref):
