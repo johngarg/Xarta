@@ -6,3 +6,4 @@ from .browse import *
 from .export import *
 from .lucky import *
 from .choose import *
+from .info import *

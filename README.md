@@ -20,9 +20,13 @@ A summary of the options that are working now:
 Usage:
   xarta init <database-location>
   xarta open <ref> [--pdf]
-  xarta add <ref> [--tag=<tg>]...
+  xarta add <ref> [--tag=<tg>]... [--download] [--local]
   xarta delete <ref>
-  xarta browse [--all] [--author=<auth>] [--tag=<tg>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>]
+  xarta browse [--all] [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>]
+  xarta lucky [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--pdf]
+  xarta choose [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--pdf]
+  xarta info <ref>
+  xarta export <export-path> [--tag=<tg>]... [--bibtex]
   xarta -h | --help
   xarta --version
 ```
