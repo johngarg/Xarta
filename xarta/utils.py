@@ -3,10 +3,14 @@ import json
 import requests
 import os
 import xmltodict
+from sys import platform
 
-
-# TODO make more general, will only work on mac and with default browser
-open_command = 'open '
+if platform.startswith('linux'):
+    open_command = 'xdg-open '
+elif platform.startswith('darwin'):
+    open_command = 'open '
+else:
+    raise ValueError('Xarta is currently not supported on Windows.')
 
 # set of arxiv categories only used for opening the "new" page of results from
 # the command line
