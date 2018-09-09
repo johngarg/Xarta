@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from .utils import get_arxiv_data, list_to_string, expand_tag
+import pdb
 
 HOME = os.path.expanduser('~')
 
@@ -79,16 +80,19 @@ class PaperDatabase():
         query_command = f'''SELECT * FROM papers;'''
         query_results = c.execute(query_command)
         all_rows = c.fetchall()
-        l = 35
-        to_be_printed = [[(c if len(c) < l else c[:(l-3)] + "...")
-                          for c in row]
-                         for row in all_rows]
+        
+        # get current console window dimensions
+        term_rows, term_columns = os.popen('stty size', 'r').read().split()
+        l = (int(term_columns) // 5) - 1 # max chars in col
+        data = [[(c if len(c) < l else c[:(l-3)] + "...") 
+                 for c in row] 
+                for row in all_rows]
+
         if not silent:
             from tabulate import tabulate
-            really_to_be_printed = [['arXiv:'+row[0], row[1], row[2], row[3], row[4]]
-                                    for row in to_be_printed]
+            to_be_printed = [['arXiv:'+row[0], *row[1:]] for row in data]
             print(
-                tabulate(really_to_be_printed,
+                tabulate(to_be_printed,
                          headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
                          tablefmt="simple"))
         conn.close()
@@ -109,36 +113,35 @@ class PaperDatabase():
         by 'Weinberg'.
         """
         library_data = self.query_papers(silent=True)
-        to_be_printed = []
+        data = []
         for row in library_data:
             if paper_id is not None and paper_id in row[0]:
-                to_be_printed.append(row)
+                data.append(row)
                 continue
             elif title is not None and title in row[1]:
-                to_be_printed.append(row)
+                data.append(row)
                 continue
             elif author is not None and author in row[2]:
-                to_be_printed.append(row)
+                data.append(row)
                 continue
             elif category is not None and category in row[3]:
-                to_be_printed.append(row)
+                data.append(row)
                 continue
             elif tags is not None and tags != []:
                 added = False  # don't include the same paper twice
                 for tag in tags:
                     if tag in row[4] and not added:
-                        to_be_printed.append(row)
+                        data.append(row)
                         added = True
 
         if not silent:
             from tabulate import tabulate
-            r_to_be_printed = [[(c if len(c) < 40 else c[:37] + "...")
-                                for c in row]
-                               for row in to_be_printed]
-            rr_to_be_printed = [['arXiv:'+row[0], row[1], row[2], row[3], row[4]]
-                                for row in r_to_be_printed]
+            short_data = [[(c if len(c) < 40 else c[:37] + "...")
+                           for c in row]
+                          for row in data]
+            to_be_printed = [['arXiv:'+row[0], *row[1:]] for row in short_data]
             print(
-                tabulate(rr_to_be_printed,
+                tabulate(to_be_printed,
                          headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
                          tablefmt="simple",
                          showindex=(True if select else False)))
