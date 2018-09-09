@@ -10,6 +10,7 @@ Usage:
   xarta browse [--all] [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>]
   xarta lucky [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--pdf]
   xarta choose [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--pdf]
+  xarta info <ref>
   xarta export <export-path> [--tag=<tg>]... [--bibtex]
   xarta -h | --help
   xarta --version
