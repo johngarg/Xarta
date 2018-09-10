@@ -7,9 +7,9 @@ Usage:
   xarta open <ref> [--pdf]
   xarta add <ref> [--tag=<tg>]... [--download] [--local]
   xarta delete <ref>
-  xarta browse [--all] [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>]
+  xarta browse [--all] [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>]
   xarta lucky [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--pdf]
-  xarta choose [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--pdf]
+  xarta choose [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf]
   xarta info <ref>
   xarta export <export-path> [--tag=<tg>]... [--bibtex]
   xarta -h | --help
