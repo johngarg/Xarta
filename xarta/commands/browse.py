@@ -18,6 +18,8 @@ class Browse(Base):
         options = self.options
         ref = options['--ref']
         tag = options['--tag']
+        filter = options['--filter']
+        filt = options['--filter']
         author = options['--author']
         category = options['--category']
         title = options['--title']
@@ -28,4 +30,6 @@ class Browse(Base):
         if all_flag:
             paper_database.query_papers()
         else:
-            paper_database.query_papers_contains(paper_id=ref, title=title, author=author, category=category, tags=tag)
+            paper_database.query_papers_contains(
+                paper_id=ref, title=title, author=author, category=category, tags=tag, filter=filter
+            )

@@ -34,7 +34,7 @@ class Export(Base):
 
         if tags != []:
             good_papers = paper_database.query_papers_contains(
-                paper_id=None, title=None, author=None, category=None, tags=tag,
+                paper_id=None, title=None, author=None, category=None, tags=tag, filter=None,
                 silent=True
             )
         else:

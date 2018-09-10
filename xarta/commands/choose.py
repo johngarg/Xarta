@@ -16,6 +16,7 @@ class Choose(Base):
         options = self.options
         pdf = options['--pdf']
         ref = options['--ref']
+        filter = options['--filter']
         tag = options['--tag']
         author = options['--author']
         category = options['--category']
@@ -23,7 +24,9 @@ class Choose(Base):
 
         database_path = read_xarta_file()
         paper_database = PaperDatabase(database_path)
-        paper_data = paper_database.query_papers_contains(paper_id=ref, title=title, author=author, category=category, tags=tag, select=True)
+        paper_data = paper_database.query_papers_contains(
+            paper_id=ref, title=title, author=author, category=category, tags=tag, filter=filter, select=True
+        )
 
         choice = int(input('Paper to open: '))
         ref_to_open = paper_data[choice][0]

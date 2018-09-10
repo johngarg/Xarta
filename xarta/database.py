@@ -1,7 +1,6 @@
 import sqlite3
 import os
-from .utils import get_arxiv_data, list_to_string, expand_tag
-import pdb
+from .utils import get_arxiv_data, list_to_string, expand_tag, format_data_term
 
 HOME = os.path.expanduser('~')
 
@@ -80,14 +79,9 @@ class PaperDatabase():
         query_command = f'''SELECT * FROM papers;'''
         query_results = c.execute(query_command)
         all_rows = c.fetchall()
-        
-        # get current console window dimensions
-        term_rows, term_columns = os.popen('stty size', 'r').read().split()
-        l = (int(term_columns) // 5) - 1 # max chars in col
-        data = [[(c if len(c) < l else c[:(l-3)] + "...") 
-                 for c in row] 
-                for row in all_rows]
 
+        # get current console window dimensions
+        data = format_data_term(all_rows)
         if not silent:
             from tabulate import tabulate
             to_be_printed = [['arXiv:'+row[0], *row[1:]] for row in data]
@@ -98,7 +92,7 @@ class PaperDatabase():
         conn.close()
         return all_rows
 
-    def query_papers_contains(self, paper_id, title, author, category, tags,
+    def query_papers_contains(self, paper_id, title, author, category, tags, filter,
                               silent=False, select=False):
         """
         Function to search and filter paper database. Returns a list of
@@ -114,31 +108,34 @@ class PaperDatabase():
         """
         library_data = self.query_papers(silent=True)
         data = []
+        lambda_prestring = 'lambda ref, title, authors, category, tags: '
         for row in library_data:
-            if paper_id is not None and paper_id in row[0]:
+            row_dict = dict(zip(['ref', 'title', 'authors', 'category', 'tags'], row))
+            if paper_id is not None and paper_id in row_dict['ref']:
                 data.append(row)
                 continue
-            elif title is not None and title in row[1]:
+            elif title is not None and title in row_dict['title']:
                 data.append(row)
                 continue
-            elif author is not None and author in row[2]:
+            elif author is not None and author in row_dict['authors']:
                 data.append(row)
                 continue
-            elif category is not None and category in row[3]:
+            elif category is not None and category in row_dict['category']:
                 data.append(row)
                 continue
             elif tags is not None and tags != []:
                 added = False  # don't include the same paper twice
                 for tag in tags:
-                    if tag in row[4] and not added:
+                    if tag in row_dict['tags'] and not added:
                         data.append(row)
                         added = True
+            elif filter is not None and eval(lambda_prestring+filter)(*row_dict.values()):
+                data.append(row)
+                continue
 
         if not silent:
             from tabulate import tabulate
-            short_data = [[(c if len(c) < 40 else c[:37] + "...")
-                           for c in row]
-                          for row in data]
+            short_data = format_data_term(data)
             to_be_printed = [['arXiv:'+row[0], *row[1:]] for row in short_data]
             print(
                 tabulate(to_be_printed,
@@ -146,7 +143,7 @@ class PaperDatabase():
                          tablefmt="simple",
                          showindex=(True if select else False)))
 
-        return to_be_printed
+        return data
 
     def contains(self, ref):
         """
@@ -159,5 +156,6 @@ class PaperDatabase():
             author=None,
             category=None,
             tags=[],
+            filter=filter,
             silent=True)
         return bool(search_results)
