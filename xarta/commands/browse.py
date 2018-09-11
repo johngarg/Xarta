@@ -19,7 +19,6 @@ class Browse(Base):
         ref = options['--ref']
         tag = options['--tag']
         filter = options['--filter']
-        filt = options['--filter']
         author = options['--author']
         category = options['--category']
         title = options['--title']

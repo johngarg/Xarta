@@ -129,9 +129,10 @@ class PaperDatabase():
                     if tag in row_dict['tags'] and not added:
                         data.append(row)
                         added = True
-            elif filter is not None and eval(lambda_prestring+filter)(*row_dict.values()):
-                data.append(row)
-                continue
+            elif filter is not None:
+                if eval(lambda_prestring+filter)(*row_dict.values()):
+                    data.append(row)
+                    continue
 
         if not silent:
             from tabulate import tabulate
@@ -156,6 +157,6 @@ class PaperDatabase():
             author=None,
             category=None,
             tags=[],
-            filter=filter,
+            filter=None,
             silent=True)
         return bool(search_results)
