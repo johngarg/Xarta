@@ -22,14 +22,14 @@ class PaperDatabase():
         c = conn.cursor()
         print('Initialising database...')
         c.execute('''CREATE TABLE papers (id text, title text, authors text, category text, tags text);''')
-        # c.execute('''CREATE TABLE tags (abbrev text, full text);''') # TODO fix this up...
         conn.commit()
         conn.close()
         print('Database initialised!')
 
-    # TODO add check to see if paper already in database
     def add_paper(self, paper_id, tags):
-        """ Add paper to database. """
+        """Add paper to database. paper_id is the arxiv number as a string. The tags
+        are a list of strings.
+        """
         conn = sqlite3.connect(self.path)
         c = conn.cursor()
         data = get_arxiv_data(paper_id)
@@ -43,7 +43,7 @@ class PaperDatabase():
         conn.commit()
         conn.close()
 
-
+    # currently unused
     def add_local_paper(self, paper_id, tags, path, title='', authors=[]):
         """ Add paper to database. """
         conn = sqlite3.connect(self.path)
@@ -72,8 +72,20 @@ class PaperDatabase():
         conn.commit()
         conn.close()
 
+    def edit_paper_tags(self, paper_id, new_tags):
+        """ Edit paper tags in database. """
+        conn = sqlite3.connect(self.path)
+        c = conn.cursor()
+        new_tags = list_to_string(new_tags)
+
+        edit_tags_command = f'''UPDATE papers SET tags = "{new_tags}" WHERE id = "{paper_id}";'''
+        c.execute(edit_tags_command)
+        print(f"{paper_id} now has the following tags in the database: {new_tags}")
+        conn.commit()
+        conn.close()
+
     def query_papers(self, silent=False):
-        """ Query information about a paper in the databse. """
+        """ Query information about a paper in the database. """
         conn = sqlite3.connect(self.path)
         c = conn.cursor()
         query_command = f'''SELECT * FROM papers;'''
