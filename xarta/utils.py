@@ -63,10 +63,7 @@ def list_to_string(lst):
         list_to_string(['John', 'Alice'])
             #=> 'John; Alice'
     """
-    lst_string = ''
-    for item in lst:
-        lst_string += item + '; '
-    return lst_string[:-2]
+    return '; '.join(lst)
 
 def expand_tag(tag, dic):
     if tag[0] == '#':
