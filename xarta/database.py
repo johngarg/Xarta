@@ -136,11 +136,11 @@ class PaperDatabase():
                 data.append(row)
                 continue
             elif tags is not None and tags != []:
-                added = False  # don't include the same paper twice
                 for tag in tags:
-                    if tag in row_dict['tags'] and not added:
+                    if tag in row_dict['tags']:
                         data.append(row)
-                        added = True
+                        break # Don't include same paper twice
+                continue
             elif filter is not None:
                 if eval(lambda_prestring+filter)(*row_dict.values()):
                     data.append(row)
