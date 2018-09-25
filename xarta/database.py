@@ -148,7 +148,7 @@ class PaperDatabase():
 
         if not silent:
             from tabulate import tabulate
-            short_data = format_data_term(data)
+            short_data = format_data_term(data, select)
             to_be_printed = [['arXiv:'+row[0], *row[1:]] for row in short_data]
             print(
                 tabulate(to_be_printed,
