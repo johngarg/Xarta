@@ -82,9 +82,9 @@ def read_xarta_file():
     except:
         raise Exception(f'Could not read {HOME}/.xarta')
 
-def format_data_term(data):
+def format_data_term(data, select=False):
     term_rows, term_columns = os.popen('stty size', 'r').read().split()
-    l = (int(term_columns) // 5) - 1 # max chars in col
+    l = (int(term_columns) // 5) - (2 if select else 1) # max chars in col
     short_data = [[(c if len(c) < l else c[:(l-3)] + "...")
                    for c in row]
                   for row in data]
