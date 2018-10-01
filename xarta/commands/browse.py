@@ -1,11 +1,8 @@
 """The browse command."""
 
 
-from json import dumps
-import os
-
 from .base import Base
-from ..utils import arxiv_open, read_xarta_file
+from ..utils import read_xarta_file
 from ..database import PaperDatabase
 
 

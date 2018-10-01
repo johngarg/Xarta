@@ -10,7 +10,7 @@ class PaperDatabase():
 
     def create_connection(self):
         """ Create a database connection to a SQLite database. """
-        print('Creating new database at ' + self.path + '...')
+        print("Creating new database at " + self.path + "...")
         conn = sqlite3.connect(self.path)
         conn.close()
         with open(HOME+'/.xarta', 'w') as xarta_file:
@@ -20,7 +20,7 @@ class PaperDatabase():
         """ Initialise database with empty table. """
         conn = sqlite3.connect(self.path)
         c = conn.cursor()
-        print('Initialising database...')
+        print("Initialising database...")
         c.execute('''CREATE TABLE papers (id text, title text, authors text, category text, tags text);''')
         conn.commit()
         conn.close()
@@ -65,7 +65,7 @@ class PaperDatabase():
 
         conn = sqlite3.connect(self.path)
         c = conn.cursor()
-        data = get_arxiv_data(paper_id)
+        #data = get_arxiv_data(paper_id)
         delete_command = f'''DELETE FROM papers WHERE id = "{paper_id}";'''
         c.execute(delete_command)
         print(f"{paper_id} deleted from database!")
@@ -100,12 +100,13 @@ class PaperDatabase():
             print(
                 tabulate(to_be_printed,
                          headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
-                         tablefmt="simple"))
+                         tablefmt='simple'))
         conn.close()
         return all_rows
 
-    def query_papers_contains(self, paper_id, title, author, category, tags, filter,
-                              silent=False, select=False):
+    def query_papers_contains(
+            self, paper_id, title, author, category, tags, filter,
+            silent=False, select=False):
         """
         Function to search and filter paper database. Returns a list of
         tuples and (if `silent` is False) prints a table to the screen. Search
@@ -153,7 +154,7 @@ class PaperDatabase():
             print(
                 tabulate(to_be_printed,
                          headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
-                         tablefmt="simple",
+                         tablefmt='simple',
                          showindex=(True if select else False)))
 
         return data
