@@ -1,8 +1,6 @@
 """The open command."""
 
 
-from json import dumps
-
 from .base import Base
 from ..utils import arxiv_open
 

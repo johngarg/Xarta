@@ -2,11 +2,9 @@
 
 
 from arxivcheck.arxiv import check_arxiv_published
-from json import dumps
-import os
 
 from .base import Base
-from ..utils import arxiv_open, read_xarta_file
+from ..utils import read_xarta_file
 from ..database import PaperDatabase
 
 
@@ -27,15 +25,15 @@ class Export(Base):
         paper_database = PaperDatabase(database_path)
 
         if not bibtex:
-            raise Exception('Currently bibtex is the only supported export format.')
+            raise Exception("Currently bibtex is the only supported export format.")
 
         if export_path is None:
-            raise Exception('<export-path> unspecified.')
+            raise Exception("<export-path> unspecified.")
 
         if tags != []:
             good_papers = paper_database.query_papers_contains(
-                paper_id=None, title=None, author=None, category=None, tags=tag, filter=None,
-                silent=True
+                paper_id=None, title=None, author=None, category=None, tags=tags,
+                filter=None, silent=True
             )
         else:
             good_papers = paper_database.query_papers(silent=True)
@@ -47,7 +45,7 @@ class Export(Base):
                 for ref in good_paper_refs:
                     bib_info = check_arxiv_published(ref)
                     if bib_info[0]:
-                        print('Writing bibtex entry for '+ref)
+                        print("Writing bibtex entry for "+ref)
                         f.write(bib_info[2]+'\n\n')
 
-            print(export_path+'xarta.bib'+' successfully written!')
+            print(export_path+"xarta.bib"+" successfully written!")

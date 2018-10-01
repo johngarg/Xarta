@@ -1,11 +1,8 @@
 """The open command."""
 
 
-from json import dumps
-import os
-
 from .base import Base
-from ..utils import arxiv_open, read_xarta_file
+from ..utils import read_xarta_file
 from ..database import PaperDatabase
 
 
@@ -21,6 +18,6 @@ class Add(Base):
         paper_database = PaperDatabase(database_path)
 
         if paper_database.contains(ref):
-            raise Exception('This paper is already in the database.')
+            raise Exception("This paper is already in the database.")
         else:
             paper_database.add_paper(paper_id=ref, tags=tags)

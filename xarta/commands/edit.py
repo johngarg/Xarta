@@ -1,9 +1,6 @@
 """The edit command."""
 
 
-from json import dumps
-import os
-
 from .base import Base
 from ..utils import read_xarta_file
 from ..database import PaperDatabase
