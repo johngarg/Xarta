@@ -1,10 +1,14 @@
+'''PaperDatabase class.'''
+
 import sqlite3
 import os
-from .utils import get_arxiv_data, list_to_string, expand_tag, format_data_term, get_all_rows_from_db
+from . import utils
 
 HOME = os.path.expanduser('~')
 
 class PaperDatabase():
+    """The paper database interface."""
+
     def __init__(self, path):
         self.path = path
 
@@ -12,16 +16,19 @@ class PaperDatabase():
         """Create a database connection to a SQLite database."""
         print("Creating new database at " + self.path + "...")
 
+        # Make sure connection works without errors
         conn = sqlite3.connect(self.path)
         conn.close()
 
+        # Database path written to .xarta file in home directory
         with open(HOME+'/.xarta', 'w') as xarta_file:
             xarta_file.write(self.path)
 
     def initialise_database(self):
         """Initialise database with empty table."""
-        init_command = '''CREATE TABLE papers
-                          (id text, title text, authors text, category text, tags text);'''
+        init_command = '''
+            CREATE TABLE papers
+            (id text, title text, authors text, category text, tags text);'''
 
         conn = sqlite3.connect(self.path)
         with conn:
@@ -36,14 +43,16 @@ class PaperDatabase():
         """
         conn = sqlite3.connect(self.path)
         with conn:
-            data = get_arxiv_data(paper_id)
-            author_string = list_to_string(data['authors'])
-            tags = [expand_tag(tag, data) for tag in tags]
-            tags = list_to_string(tags)
-            insert_command = f'''INSERT INTO papers
-                                 (id, title, authors, category, tags)
-                                 VALUES
-                                 ("{paper_id}", "{data['title']}", "{author_string}", "{data['category']}", "{tags}");'''
+            data = utils.get_arxiv_data(paper_id)
+            authors = utils.list_to_string(data['authors'])
+            tags = [utils.expand_tag(tag, data) for tag in tags]
+            tags = utils.list_to_string(tags)
+            title, category = data['title'], data['category']
+            insert_command = f'''
+                INSERT INTO papers
+                (id, title, authors, category, tags)
+                VALUES
+                ("{paper_id}", "{title}", "{authors}", "{category}", "{tags}");'''
 
             conn.execute(insert_command)
 
@@ -62,7 +71,7 @@ class PaperDatabase():
         """Edit paper tags in database."""
         conn = sqlite3.connect(self.path)
         with conn:
-            new_tags = list_to_string(new_tags)
+            new_tags = utils.list_to_string(new_tags)
             edit_tags_command = f'''UPDATE papers SET tags = "{new_tags}"
                                     WHERE id = "{paper_id}";'''
             conn.execute(edit_tags_command)
@@ -71,29 +80,38 @@ class PaperDatabase():
 
     def query_papers(self, silent=False):
         """Query information about a paper in the database."""
-        all_rows = get_all_rows_from_db(self.path)
+        all_rows = utils.get_all_rows_from_db(self.path)
 
         # get current console window dimensions
-        data = format_data_term(all_rows)
+        data = utils.format_data_term(all_rows)
         if not silent:
             from tabulate import tabulate
-            to_be_printed = [['arXiv:'+row[0], *row[1:]] for row in data]
+
+            # prepend arXiv to ref to distinguish from cern doc server papers
+            to_be_printed = []
+            for row in data:
+                new_row = row
+                new_row[0] = 'arXiv:' + row[0]
+                to_be_printed.append(new_row)
+
+            col_names = ['Ref', 'Title', 'Authors', 'Category', 'Tags']
             print(
                 tabulate(to_be_printed,
-                         headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
+                         headers=col_names,
                          tablefmt='simple'))
 
         return all_rows
 
     def query_papers_contains(
-            self, paper_id, title, author, category, tags, filter,
+            self, paper_id, title, author, category, tags, filter_,
             silent=False, select=False):
         """Function to search and filter paper database. Returns a list of
         tuples and (if `silent` is False) prints a table to the screen. Search
         parameters connected by a logical OR, thus:
 
-            db.query_papers_contains(paper_id=None, title=None, author='Weinberg',
-                                     category='hep-th', tags=[])
+            db.query_papers_contains(paper_id=None, title=None,
+                                     author='Weinberg', category='hep-th',
+                                     tags=[])
 
         will return every paper in the database from 'hep-th' as well as those
         by 'Weinberg'.
@@ -101,8 +119,9 @@ class PaperDatabase():
         library_data = self.query_papers(silent=True)
         data = []
         lambda_prestring = 'lambda ref, title, authors, category, tags: '
+        col_names = ['ref', 'title', 'authors', 'category', 'tags']
         for row in library_data:
-            row_dict = dict(zip(['ref', 'title', 'authors', 'category', 'tags'], row))
+            row_dict = dict(zip(col_names, row))
             if paper_id is not None and paper_id in row_dict['ref']:
                 data.append(row)
                 continue
@@ -121,14 +140,14 @@ class PaperDatabase():
                         data.append(row)
                         break # Don't include same paper twice
                 continue
-            elif filter is not None:
-                if eval(lambda_prestring+filter)(*row_dict.values()):
+            elif filter_ is not None:
+                if eval(lambda_prestring+filter_)(*row_dict.values()):
                     data.append(row)
                     continue
 
         if not silent:
             from tabulate import tabulate
-            short_data = format_data_term(data, select)
+            short_data = utils.format_data_term(data, select)
             to_be_printed = [['arXiv:'+row[0], *row[1:]] for row in short_data]
             print(
                 tabulate(to_be_printed,
@@ -148,6 +167,6 @@ class PaperDatabase():
             author=None,
             category=None,
             tags=[],
-            filter=None,
+            filter_=None,
             silent=True)
         return bool(search_results)
