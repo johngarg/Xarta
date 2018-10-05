@@ -13,7 +13,7 @@ class Choose(Base):
         options = self.options
         pdf = options['--pdf']
         ref = options['--ref']
-        filter = options['--filter']
+        filter_ = options['--filter']
         tag = options['--tag']
         author = options['--author']
         category = options['--category']
@@ -23,7 +23,7 @@ class Choose(Base):
         paper_database = PaperDatabase(database_path)
         paper_data = paper_database.query_papers_contains(
             paper_id=ref, title=title, author=author, category=category,
-            tags=tag, filter=filter, select=True
+            tags=tag, filter_=filter_, select=True
         )
 
         choice = int(input('Paper to open: '))

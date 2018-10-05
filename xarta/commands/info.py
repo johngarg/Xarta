@@ -17,7 +17,7 @@ class Info(Base):
         paper_database = PaperDatabase(database_path)
         info = paper_database.query_papers_contains(
             paper_id=ref, title=None, author=None, category=None, tags=[],
-            filter=None, silent=True)
+            filter_=None, silent=True)
 
         info = info[0]
         print(f"arXiv Ref: {info[0]}")
