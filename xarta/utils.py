@@ -1,8 +1,7 @@
 from sys import platform
 from urllib.request import urlopen
-#import json
 import os
-#import requests
+import sqlite3
 import xmltodict
 
 if platform.startswith("linux"):
@@ -28,7 +27,13 @@ def is_arxiv_category(s):
 def is_arxiv_ref(s):
     """Returns True if s is a valid arXiv reference."""
     x = s.split('.')
-    return (len(x) == 2 and len(x[0]) == 4) or (len(x[0].split('/')) == 2)
+
+    # modern ref: year.xxxxx
+    # old ref: hep-ph/yearxxxxx
+    is_modern_ref = (len(x) == 2 and len(x[0]) == 4)
+    is_old_ref = (len(x[0].split('/')) == 2)
+
+    return is_modern_ref or is_old_ref
 
 def arxiv_open(ref, pdf=False):
     """Opens arxiv ref in browser."""
@@ -42,24 +47,29 @@ def arxiv_open(ref, pdf=False):
     else:
         raise ValueError('`xarta open` received an invalid <ref>.')
 
+# TODO Consider returning a namedtuple here
 def get_arxiv_data(ref):
     """Returns a dictionary of data about the reference `ref`."""
     url = 'http://export.arxiv.org/api/query?id_list=' + ref
     xml_data = urlopen(url).read().decode('utf-8')
     data = xmltodict.parse(xml_data)['feed']['entry']
+
+    if isinstance(data['author'], list):
+        authors = [auth['name'] for auth in data['author']]
+    else:
+        authors = [data['author']['name']]
+
     string_format = lambda s: s.replace('\r', '').replace('\n', '').replace('  ', ' ')
-    authors = [auth['name'] for auth in data['author']] \
-              if isinstance(data['author'], list) else [data['author']['name']]
     dic = {'id': data['id'],
            'title': string_format(data['title']),
            'authors': authors,
            'category': data['arxiv:primary_category']['@term']}
+
     return dic
 
 def list_to_string(lst):
-    """
-    Takes a list of items (strings) and returns a string of items separated by
-    semicolons.
+    """Takes a list of items (strings) and returns a string of items separated
+    by semicolons.
     e.g.
         list_to_string(['John', 'Alice'])
             #=> 'John; Alice'
@@ -69,24 +79,54 @@ def list_to_string(lst):
 def expand_tag(tag, dic):
     if tag[0] == '#':
         return dic[tag[1:]]
+
     return tag
 
 def read_xarta_file():
-    """
-    Read database location from ~/.xarta file and returns path as string.
-    """
+    """Read database location from ~/.xarta file and returns path as string."""
     home = os.path.expanduser('~')
+
     try:
         with open(home+'/.xarta', 'r') as xarta_file:
             return xarta_file.readline()
     except:
         raise Exception(f"Could not read {home}/.xarta")
 
+def dots_if_needed(s, max_chars):
+    """If string `s` is longer than `max_chars`, return an abbreviated string
+    with ellipsis.
+    e.g.
+        dots_if_needed('This is a very long string.', 12)
+            #=> 'This is a ve...'
+    """
+    if len(s) < max_chars:
+        return s
+    else:
+        return s[:(max_chars-3)] + "..."
+
 def format_data_term(data, select=False):
     """Returns nicely formatted data wrt terminal dimensions."""
     _, term_columns = os.popen('stty size', 'r').read().split()
-    l = (int(term_columns) // 5) - (2 if select else 1) # max chars in col
-    short_data = [[(c if len(c) < l else c[:(l-3)] + "...")
-                   for c in row]
-                  for row in data]
+
+    # max chars in column = a fifth of the terminal window - 1 or so
+    col_width = int(term_columns) // 5
+    offset = 2 if select else 1 # offset b/c col_width still leads to spillage
+    max_chars = col_width - offset
+
+    short_data = []
+    for row in data:
+        short_row = [dots_if_needed(s, max_chars) for s in row]
+        short_data.append(short_row)
+
     return short_data
+
+def get_all_rows_from_db(path):
+    query_command = f'''SELECT * FROM papers;'''
+
+    conn = sqlite3.connect(path)
+    c = conn.cursor()
+    query_results = c.execute(query_command)
+    all_rows = c.fetchall()
+    c.close()
+
+    return all_rows
