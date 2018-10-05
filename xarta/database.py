@@ -9,7 +9,7 @@ class PaperDatabase():
         self.path = path
 
     def create_connection(self):
-        """ Create a database connection to a SQLite database. """
+        """Create a database connection to a SQLite database."""
         print("Creating new database at " + self.path + "...")
         conn = sqlite3.connect(self.path)
         conn.close()
@@ -17,80 +17,60 @@ class PaperDatabase():
             xarta_file.write(self.path)
 
     def initialise_database(self):
-        """ Initialise database with empty table. """
+        """Initialise database with empty table.
+        """
         conn = sqlite3.connect(self.path)
-        c = conn.cursor()
-        print("Initialising database...")
-        c.execute('''CREATE TABLE papers (id text, title text, authors text, category text, tags text);''')
-        conn.commit()
-        conn.close()
+        with conn:
+            print("Initialising database...")
+            conn.execute('''CREATE TABLE papers
+                         (id text, title text, authors text, category text, tags text);''')
         print('Database initialised!')
 
     def add_paper(self, paper_id, tags):
-        """Add paper to database. paper_id is the arxiv number as a string. The tags
-        are a list of strings.
+        """Add paper to database. paper_id is the arxiv number as a string. The
+        tags are a list of strings.
         """
         conn = sqlite3.connect(self.path)
-        c = conn.cursor()
-        data = get_arxiv_data(paper_id)
-        author_string = list_to_string(data['authors'])
-        tags = [expand_tag(tag, data) for tag in tags]
-        tags = list_to_string(tags)
+        with conn:
+            data = get_arxiv_data(paper_id)
+            author_string = list_to_string(data['authors'])
+            tags = [expand_tag(tag, data) for tag in tags]
+            tags = list_to_string(tags)
 
-        insert_command = f'''INSERT INTO papers (id, title, authors, category, tags) VALUES ("{paper_id}", "{data['title']}", "{author_string}", "{data['category']}", "{tags}");'''
-        c.execute(insert_command)
+            insert_command = f'''INSERT INTO papers
+                                 (id, title, authors, category, tags)
+                                 VALUES
+                                 ("{paper_id}", "{data['title']}", "{author_string}", "{data['category']}", "{tags}");'''
+            conn.execute(insert_command)
         print(f"{paper_id} added to database!")
-        conn.commit()
-        conn.close()
-
-    # currently unused
-    def add_local_paper(self, paper_id, tags, path, title='', authors=[]):
-        """ Add paper to database. """
-        conn = sqlite3.connect(self.path)
-        c = conn.cursor()
-        data = {'title': title, 'authors': authors, 'category': 'local'}
-        author_string = list_to_string(data['authors'])
-        tags = [expand_tag(tag, data) for tag in tags]
-        tags = list_to_string(tags)
-
-        insert_command = f'''INSERT INTO papers (id, title, authors, category, tags) VALUES ("{paper_id}", "{data['title']}", "{author_string}", "{data['category']}", "{tags}");'''
-        c.execute(insert_command)
-        print(f"{paper_id} added to database from {path}!")
-        conn.commit()
-        conn.close()
-
 
     def delete_paper(self, paper_id):
-        """ Remove paper from database. """
-
+        """Remove paper from database."""
         conn = sqlite3.connect(self.path)
-        c = conn.cursor()
-        #data = get_arxiv_data(paper_id)
-        delete_command = f'''DELETE FROM papers WHERE id = "{paper_id}";'''
-        c.execute(delete_command)
+        with conn:
+            delete_command = f'''DELETE FROM papers WHERE id = "{paper_id}";'''
+            conn.execute(delete_command)
         print(f"{paper_id} deleted from database!")
-        conn.commit()
-        conn.close()
 
     def edit_paper_tags(self, paper_id, new_tags):
-        """ Edit paper tags in database. """
+        """Edit paper tags in database."""
         conn = sqlite3.connect(self.path)
-        c = conn.cursor()
-        new_tags = list_to_string(new_tags)
+        with conn:
+            new_tags = list_to_string(new_tags)
 
-        edit_tags_command = f'''UPDATE papers SET tags = "{new_tags}" WHERE id = "{paper_id}";'''
-        c.execute(edit_tags_command)
+            edit_tags_command = f'''UPDATE papers SET tags = "{new_tags}"
+                                    WHERE id = "{paper_id}";'''
+            conn.execute(edit_tags_command)
         print(f"{paper_id} now has the following tags in the database: {new_tags}")
-        conn.commit()
-        conn.close()
 
     def query_papers(self, silent=False):
-        """ Query information about a paper in the database. """
+        """Query information about a paper in the database."""
         conn = sqlite3.connect(self.path)
         c = conn.cursor()
         query_command = f'''SELECT * FROM papers;'''
         query_results = c.execute(query_command)
         all_rows = c.fetchall()
+        c.close()
 
         # get current console window dimensions
         data = format_data_term(all_rows)
@@ -101,7 +81,7 @@ class PaperDatabase():
                 tabulate(to_be_printed,
                          headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
                          tablefmt='simple'))
-        conn.close()
+
         return all_rows
 
     def query_papers_contains(
