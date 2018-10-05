@@ -1,3 +1,5 @@
+'''Some useful functions.'''
+
 from sys import platform
 from urllib.request import urlopen
 import os
@@ -101,8 +103,7 @@ def dots_if_needed(s, max_chars):
     """
     if len(s) < max_chars:
         return s
-    else:
-        return s[:(max_chars-3)] + "..."
+    return s[:(max_chars-3)] + "..."
 
 def format_data_term(data, select=False):
     """Returns nicely formatted data wrt terminal dimensions."""
