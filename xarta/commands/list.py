@@ -2,11 +2,11 @@
 
 from collections import namedtuple
 from .base import Base
-from ..utils import arxiv_open, read_xarta_file
+from ..utils import read_xarta_file
 from ..database import PaperDatabase
 
-data_headers = ['ref', 'title', 'authors', 'category', 'tags']
-Paper = namedtuple('Paper', data_headers)
+DATA_HEADERS = ('ref', 'title', 'authors', 'category', 'tags')
+Paper = namedtuple('Paper', DATA_HEADERS)
 
 class List(Base):
     """ List all tags or authors in library. """
@@ -32,4 +32,5 @@ class List(Base):
                 items.add(item)
 
         for item in sorted(list(items)):
-            print(item) if cont is not None and cont in item else None
+            if cont is not None and cont in item:
+                print(item)
