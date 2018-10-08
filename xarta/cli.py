@@ -12,6 +12,7 @@ Usage:
   xarta lucky [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--pdf]
   xarta choose [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf]
   xarta info <ref>
+  xarta list <obj> [--contains=<cont>]
   xarta export <export-path> [--tag=<tg>]... [--bibtex]
   xarta -h | --help
   xarta --version
