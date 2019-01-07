@@ -32,5 +32,7 @@ class List(Base):
                 items.add(item)
 
         for item in sorted(list(items)):
-            if cont is not None and cont in item:
+            if cont is None:
+                print(item)
+            elif cont in item:
                 print(item)
