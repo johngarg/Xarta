@@ -1,12 +1,15 @@
-'''PaperDatabase class.'''
+"""PaperDatabase class."""
 
 import sqlite3
 import os
 from . import utils
 
-HOME = os.path.expanduser('~')
+HOME = os.path.expanduser("~")
 
-class PaperDatabase():
+import re
+
+
+class PaperDatabase:
     """The paper database interface."""
 
     def __init__(self, path):
@@ -21,38 +24,47 @@ class PaperDatabase():
         conn.close()
 
         # Database path written to .xarta file in home directory
-        with open(HOME+'/.xarta', 'w') as xarta_file:
+        with open(HOME + "/.xarta", "w") as xarta_file:
             xarta_file.write(self.path)
 
     def initialise_database(self):
         """Initialise database with empty table."""
-        init_command = '''
+        init_command = """
             CREATE TABLE papers
-            (id text, title text, authors text, category text, tags text);'''
+            (id text, title text, authors text, category text, tags text);"""
 
         conn = sqlite3.connect(self.path)
         with conn:
             print("Initialising database...")
             conn.execute(init_command)
 
-        print('Database initialised!')
+        print("Database initialised!")
 
     def add_paper(self, paper_id, tags):
         """Add paper to database. paper_id is the arxiv number as a string. The
         tags are a list of strings.
         """
+        # clean id
+        paper_id = self.__class__.processed_ref(paper_id)
+
+        if not self.__class__.is_valid_ref(paper_id):
+            raise Exception(f"Not a valid arXiv reference: {paper_id}")
+
+        if self.contains(paper_id):
+            raise Exception("This paper is already in the database.")
+
         conn = sqlite3.connect(self.path)
         with conn:
             data = utils.get_arxiv_data(paper_id)
-            authors = utils.list_to_string(data['authors'])
+            authors = utils.list_to_string(data["authors"])
             tags = [utils.expand_tag(tag, data) for tag in tags]
             tags = utils.list_to_string(tags)
-            title, category = data['title'], data['category']
-            insert_command = f'''
+            title, category = data["title"], data["category"]
+            insert_command = f"""
                 INSERT INTO papers
                 (id, title, authors, category, tags)
                 VALUES
-                ("{paper_id}", "{title}", "{authors}", "{category}", "{tags}");'''
+                ("{paper_id}", "{title}", "{authors}", "{category}", "{tags}");"""
 
             conn.execute(insert_command)
 
@@ -62,7 +74,7 @@ class PaperDatabase():
         """Remove paper from database."""
         conn = sqlite3.connect(self.path)
         with conn:
-            delete_command = f'''DELETE FROM papers WHERE id = "{paper_id}";'''
+            delete_command = f"""DELETE FROM papers WHERE id = "{paper_id}";"""
             conn.execute(delete_command)
 
         print(f"{paper_id} deleted from database!")
@@ -72,8 +84,8 @@ class PaperDatabase():
         conn = sqlite3.connect(self.path)
         with conn:
             new_tags = utils.list_to_string(new_tags)
-            edit_tags_command = f'''UPDATE papers SET tags = "{new_tags}"
-                                    WHERE id = "{paper_id}";'''
+            edit_tags_command = f"""UPDATE papers SET tags = "{new_tags}"
+                                    WHERE id = "{paper_id}";"""
             conn.execute(edit_tags_command)
 
         print(f"{paper_id} now has the following tags in the database: {new_tags}")
@@ -91,20 +103,25 @@ class PaperDatabase():
             to_be_printed = []
             for row in data:
                 new_row = row
-                new_row[0] = 'arXiv:' + row[0]
+                new_row[0] = "arXiv:" + row[0]
                 to_be_printed.append(new_row)
 
-            col_names = ['Ref', 'Title', 'Authors', 'Category', 'Tags']
-            print(
-                tabulate(to_be_printed,
-                         headers=col_names,
-                         tablefmt='simple'))
+            col_names = ["Ref", "Title", "Authors", "Category", "Tags"]
+            print(tabulate(to_be_printed, headers=col_names, tablefmt="simple"))
 
         return all_rows
 
     def query_papers_contains(
-            self, paper_id, title, author, category, tags, filter_,
-            silent=False, select=False):
+        self,
+        paper_id,
+        title,
+        author,
+        category,
+        tags,
+        filter_,
+        silent=False,
+        select=False,
+    ):
         """Function to search and filter paper database. Returns a list of
         tuples and (if `silent` is False) prints a table to the screen. Search
         parameters connected by a logical OR, thus:
@@ -118,42 +135,46 @@ class PaperDatabase():
         """
         library_data = self.query_papers(silent=True)
         data = []
-        lambda_prestring = 'lambda ref, title, authors, category, tags: '
-        col_names = ['ref', 'title', 'authors', 'category', 'tags']
+        lambda_prestring = "lambda ref, title, authors, category, tags: "
+        col_names = ["ref", "title", "authors", "category", "tags"]
         for row in library_data:
             row_dict = dict(zip(col_names, row))
-            if paper_id is not None and paper_id in row_dict['ref']:
+            if paper_id is not None and paper_id in row_dict["ref"]:
                 data.append(row)
                 continue
-            elif title is not None and title in row_dict['title']:
+            elif title is not None and title in row_dict["title"]:
                 data.append(row)
                 continue
-            elif author is not None and author in row_dict['authors']:
+            elif author is not None and author in row_dict["authors"]:
                 data.append(row)
                 continue
-            elif category is not None and category in row_dict['category']:
+            elif category is not None and category in row_dict["category"]:
                 data.append(row)
                 continue
             elif tags is not None and tags != []:
                 for tag in tags:
-                    if tag in row_dict['tags']:
+                    if tag in row_dict["tags"]:
                         data.append(row)
-                        break # Don't include same paper twice
+                        break  # Don't include same paper twice
                 continue
             elif filter_ is not None:
-                if eval(lambda_prestring+filter_)(*row_dict.values()):
+                if eval(lambda_prestring + filter_)(*row_dict.values()):
                     data.append(row)
                     continue
 
         if not silent:
             from tabulate import tabulate
+
             short_data = utils.format_data_term(data, select)
-            to_be_printed = [['arXiv:'+row[0], *row[1:]] for row in short_data]
+            to_be_printed = [["arXiv:" + row[0], *row[1:]] for row in short_data]
             print(
-                tabulate(to_be_printed,
-                         headers=['Ref', 'Title', 'Authors', 'Category', 'Tags'],
-                         tablefmt='simple',
-                         showindex=(True if select else False)))
+                tabulate(
+                    to_be_printed,
+                    headers=["Ref", "Title", "Authors", "Category", "Tags"],
+                    tablefmt="simple",
+                    showindex=(True if select else False),
+                )
+            )
 
         return data
 
@@ -168,5 +189,21 @@ class PaperDatabase():
             category=None,
             tags=[],
             filter_=None,
-            silent=True)
+            silent=True,
+        )
         return bool(search_results)
+
+    @classmethod
+    def processed_ref(cls, paper_id):
+        # strip version
+        proc_paper_id = re.sub("v[0-9]+$", "", paper_id)
+        if proc_paper_id != paper_id:
+            print("Stripping version from paper ID.")
+
+        return proc_paper_id
+
+    @classmethod
+    def is_valid_ref(cls, paper_id):
+        is_new_arxiv_ref = bool(re.match("\d{4}\.\d+", paper_id))
+        is_old_arxiv_ref = bool(re.match("[\w\-\.]+\/\d+", paper_id))
+        return is_new_arxiv_ref or is_old_arxiv_ref

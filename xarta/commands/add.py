@@ -11,13 +11,10 @@ class Add(Base):
 
     def run(self):
         options = self.options
-        ref = options['<ref>']
-        tags = options['--tag']
+        ref = options["<ref>"]
+        tags = options["--tag"]
 
         database_path = read_xarta_file()
         paper_database = PaperDatabase(database_path)
 
-        if paper_database.contains(ref):
-            raise Exception("This paper is already in the database.")
-        else:
-            paper_database.add_paper(paper_id=ref, tags=tags)
+        paper_database.add_paper(paper_id=ref, tags=tags)
