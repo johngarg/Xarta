@@ -5,7 +5,7 @@ Usage:
   xarta hello
   xarta init <database-location>
   xarta open <ref> [--pdf]
-  xarta add <ref> [--tag=<tg>]... [--download] [--local]
+  xarta add <ref> [--tag=<tg>]...
   xarta delete <ref>
   xarta edit <ref> [--tag=<tg>]...
   xarta browse [--all] [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>]
@@ -53,6 +53,7 @@ from . import __version__ as VERSION
 def main():
     """Main CLI entrypoint."""
     import xarta.commands
+
     options = docopt(__doc__, version=VERSION)
 
     # Here we'll try to dynamically match the command the user is trying to run
@@ -61,6 +62,8 @@ def main():
         if hasattr(xarta.commands, k) and v:
             module = getattr(xarta.commands, k)
             xarta.commands = getmembers(module, isclass)
-            command = [command[1] for command in xarta.commands if command[0] != 'Base'][0]
+            command = [
+                command[1] for command in xarta.commands if command[0] != "Base"
+            ][0]
             command = command(options)
             command.run()
