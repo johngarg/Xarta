@@ -34,12 +34,14 @@ A summary of the options that are working now:
 Usage:
   xarta init <database-location>
   xarta open <ref> [--pdf]
-  xarta add <ref> [--tag=<tg>]... [--download] [--local]
+  xarta add <ref> [--tag=<tg>]...
   xarta delete <ref>
+  xarta edit <ref> [--tag=<tg>]...
   xarta browse [--all] [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>]
   xarta lucky [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--pdf]
   xarta choose [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf]
   xarta info <ref>
+  xarta list <obj> [--contains=<cont>]
   xarta export <export-path> [--tag=<tg>]... [--bibtex]
   xarta -h | --help
   xarta --version
