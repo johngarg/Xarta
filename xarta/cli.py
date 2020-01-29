@@ -30,13 +30,14 @@ Options:
 
 
 The available commands are:
-  init                              Initialises the paper database in a given directory. The database directory is stored in ~/.xarta.
+  init                              Initialises the xarta database in '<database-location>/.xarta.d'. The location of the database is written to '~/.xarta'
   add                               Add an arXiv ID, optionally with some tags.
   delete                            Remove and arXiv ID.
   open                              Opens the abstract or pdf url of a paper.
   browse                            Searches for and prints matching papers in the database
   list                              Lists tags or authors, optionally print only those containing some substring
 With the exception of the --filter option, all search conditions are connected by logical disjunction.
+
 
 Examples:
   xarta open 1704.05849

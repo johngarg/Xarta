@@ -11,20 +11,26 @@ class Init(Base):
     def run(self):
         import os
 
-        database_location = self.options["<database-location>"] + ".xarta.d/"
-        database_path = database_location + "db.sqlite3"
+        database_location = self.options["<database-location>"]
 
         # resolve relative paths, e.g., 'xarta init ./'
-        database_path = os.path.abspath(database_path)
+        database_location = os.path.abspath(database_location)
 
+        # verify folder exists
+        if not os.path.isdir(database_location):
+            raise Exception("Directory does not exist.")
+
+        #create xarta directory
+        database_location += "/.xarta.d"
         os.makedirs(database_location, exist_ok=True)
+        database_path = database_location + "/db.sqlite3"
+
+
 
         # TODO Write some code to allow reinit of database to different location
         # and update of .xarta file accordingly
 
         if "db.sqlite3" not in os.listdir(database_location):
-            sql_command = "sqlite3 " + database_path + ' ";"'
-            os.system(sql_command)
             paper_database = PaperDatabase(database_path)
             paper_database.create_connection()
             paper_database.initialise_database()
