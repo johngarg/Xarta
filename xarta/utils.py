@@ -3,6 +3,7 @@
 from sys import platform
 from urllib.request import urlopen
 import os
+import re
 import sqlite3
 import xmltodict
 
@@ -43,24 +44,27 @@ def is_arxiv_category(s):
     return s in ARXIV_CATEGORIES
 
 
-# TODO This is currently not very precise but does the job.
-def is_arxiv_ref(s):
+def is_valid_ref(paper_id):
     """Returns True if s is a valid arXiv reference."""
-    x = s.split(".")
+    is_new_arxiv_ref = bool(re.match("\d{4}\.\d+", paper_id))
+    is_old_arxiv_ref = bool(re.match("[\w\-\.]+\/\d+", paper_id))
+    return is_new_arxiv_ref or is_old_arxiv_ref
 
-    # modern ref: year.xxxxx
-    # old ref: hep-ph/yearxxxxx
-    is_modern_ref = len(x) == 2 and len(x[0]) == 4
-    is_old_ref = len(x[0].split("/")) == 2
 
-    return is_modern_ref or is_old_ref
+def processed_ref(paper_id, verbose=True):
+    # strip version
+    proc_paper_id = re.sub("v[0-9]+$", "", paper_id)
+    if proc_paper_id != paper_id and verbose:
+        print("Stripping version from paper ID.")
+
+    return proc_paper_id
 
 
 def arxiv_open(ref, pdf=False):
     """Opens arxiv ref in browser."""
     if is_arxiv_category(ref):
         os.system(OPEN_COMMAND + " https://arxiv.org/list/" + ref + "/new")
-    elif is_arxiv_ref(ref):
+    elif is_valid_ref(ref):
         if pdf:
             os.system(OPEN_COMMAND + " https://arxiv.org/pdf/" + ref + ".pdf")
         else:
@@ -69,7 +73,6 @@ def arxiv_open(ref, pdf=False):
         raise ValueError("`xarta open` received an invalid <ref>.")
 
 
-# TODO Consider returning a namedtuple here
 def get_arxiv_data(ref):
     """Returns a dictionary of data about the reference `ref`."""
     url = "http://export.arxiv.org/api/query?id_list=" + ref
