@@ -4,12 +4,12 @@ xarta
 
 Usage:
   xarta hello
+  xarta open <ref> [--pdf]
   xarta init [<database-location>]
   xarta add <ref> [<tags> ...]
   xarta delete <ref>
   xarta edit <ref> [<tags> ...]
   xarta info <ref>
-  xarta open <ref> [--pdf]
   xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf] [<tags> ...]
   xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tags> ...]
   xarta browse [--all] [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [<tags> ...]
@@ -32,12 +32,12 @@ Options:
 
 
 Some of the available commands are:
+  open                              Opens the abstract or pdf url of an arXiv ID, or an arXiv category's new submissions page. The paper does not need to be in the database.
   init                              Initialises the xarta database in '<database-location>/.xarta.d'. The location of the database is written to '~/.xarta'.
   add                               Add an arXiv ID, optionally with some tags.
   delete                            Remove and arXiv ID.
   edit                              Updates the tags of a paper.
-  info                              Displays information about a paper.
-  open                              Opens the abstract or pdf url of a paper.
+  info                              Displays information about a paper. Unlike 'xarta open', the paper must be in the database.
   choose                            Choose a paper to open from a list of papers matching some criteria.
   lucky                             Randomly choose a paper to open from a list of papers matching some criteria.
   browse                            Prints all papers matching some criteria.
@@ -53,8 +53,8 @@ Examples:
   xarta add 1704.05849 leptoquarks neutrino-mass flavour-anomalies
   xarta browse neutrino-mass
   xarta browse --filter="'John' in authors and ('neutrino' in tags or 'leptoquarks' in tags)"
-  xarta remove 1704.05849
   xarta export ~/Desktop/ --bibtex
+  xarta remove 1704.05849
 
 
 Help:
