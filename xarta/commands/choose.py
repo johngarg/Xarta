@@ -11,21 +11,26 @@ class Choose(Base):
 
     def run(self):
         options = self.options
-        pdf = options['--pdf']
-        ref = options['--ref']
-        filter_ = options['--filter']
-        tag = options['--tag']
-        author = options['--author']
-        category = options['--category']
-        title = options['--title']
+        pdf = options["--pdf"]
+        ref = options["--ref"]
+        filter_ = options["--filter"]
+        tag = options["--tag"]
+        author = options["--author"]
+        category = options["--category"]
+        title = options["--title"]
 
         database_path = read_xarta_file()
         paper_database = PaperDatabase(database_path)
         paper_data = paper_database.query_papers_contains(
-            paper_id=ref, title=title, author=author, category=category,
-            tags=tag, filter_=filter_, select=True
+            paper_id=ref,
+            title=title,
+            author=author,
+            category=category,
+            tags=tag,
+            filter_=filter_,
+            select=True,
         )
 
-        choice = int(input('Paper to open: '))
+        choice = int(input("Paper to open: "))
         ref_to_open = paper_data[choice][0]
         arxiv_open(ref_to_open, pdf=pdf)

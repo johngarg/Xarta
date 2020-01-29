@@ -10,6 +10,6 @@ class Open(Base):
 
     def run(self):
         options = self.options
-        ref = options['<ref>']
-        pdf = options['--pdf']
+        ref = options["<ref>"]
+        pdf = options["--pdf"]
         arxiv_open(ref, pdf=pdf)

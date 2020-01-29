@@ -11,13 +11,19 @@ class Info(Base):
 
     def run(self):
         options = self.options
-        ref = options['<ref>']
+        ref = options["<ref>"]
 
         database_path = read_xarta_file()
         paper_database = PaperDatabase(database_path)
         info = paper_database.query_papers_contains(
-            paper_id=ref, title=None, author=None, category=None, tags=[],
-            filter_=None, silent=True)
+            paper_id=ref,
+            title=None,
+            author=None,
+            category=None,
+            tags=[],
+            filter_=None,
+            silent=True,
+        )
 
         info = info[0]
         print(f"arXiv Ref: {info[0]}")

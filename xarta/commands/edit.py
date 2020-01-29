@@ -11,8 +11,8 @@ class Edit(Base):
 
     def run(self):
         options = self.options
-        ref = options['<ref>']
-        tags = options['--tag']
+        ref = options["<ref>"]
+        tags = options["--tag"]
 
         database_path = read_xarta_file()
         paper_database = PaperDatabase(database_path)
