@@ -6,8 +6,6 @@ from . import utils
 
 HOME = os.path.expanduser("~")
 
-import re
-
 
 class PaperDatabase:
     """The paper database interface."""
@@ -45,9 +43,9 @@ class PaperDatabase:
         tags are a list of strings.
         """
         # clean id
-        paper_id = self.__class__.processed_ref(paper_id)
+        paper_id = utils.processed_ref(paper_id)
 
-        if not self.__class__.is_valid_ref(paper_id):
+        if not utils.is_valid_ref(paper_id):
             raise Exception(f"Not a valid arXiv reference: {paper_id}")
 
         if self.contains(paper_id):
@@ -192,18 +190,3 @@ class PaperDatabase:
             silent=True,
         )
         return bool(search_results)
-
-    @classmethod
-    def processed_ref(cls, paper_id):
-        # strip version
-        proc_paper_id = re.sub("v[0-9]+$", "", paper_id)
-        if proc_paper_id != paper_id:
-            print("Stripping version from paper ID.")
-
-        return proc_paper_id
-
-    @classmethod
-    def is_valid_ref(cls, paper_id):
-        is_new_arxiv_ref = bool(re.match("\d{4}\.\d+", paper_id))
-        is_old_arxiv_ref = bool(re.match("[\w\-\.]+\/\d+", paper_id))
-        return is_new_arxiv_ref or is_old_arxiv_ref
