@@ -20,19 +20,16 @@ class Init(Base):
         if not os.path.isdir(database_location):
             raise Exception("Directory does not exist.")
 
-        #create xarta directory
+        # create xarta directory
         database_location += "/.xarta.d"
         os.makedirs(database_location, exist_ok=True)
         database_path = database_location + "/db.sqlite3"
-
-
-
-        # TODO Write some code to allow reinit of database to different location
-        # and update of .xarta file accordingly
 
         if "db.sqlite3" not in os.listdir(database_location):
             paper_database = PaperDatabase(database_path)
             paper_database.create_connection()
             paper_database.initialise_database()
         else:
-            print(database_path + " already exists.")
+            print(database_path + " already exists. Updating ~/.xarta")
+            with open(os.path.expanduser("~") + "/.xarta", "w") as xarta_file:
+                xarta_file.write(database_path)

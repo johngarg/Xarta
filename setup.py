@@ -15,11 +15,14 @@ with open(join(this_dir, "README.md"), encoding="utf-8") as file:
     long_description = file.read()
 
 # get the dependencies and installs
-with open(join(this_dir, 'requirements.txt'), encoding='utf-8') as f:
-    all_reqs = f.read().split('\n')
+with open(join(this_dir, "requirements.txt"), encoding="utf-8") as f:
+    all_reqs = f.read().split("\n")
 
-install_requires = [x.strip() for x in all_reqs if 'git+' not in x]
-dependency_links = [x.strip().replace('git+', '') for x in all_reqs if x.startswith('git+')]
+install_requires = [x.strip() for x in all_reqs if "git+" not in x]
+dependency_links = [
+    x.strip().replace("git+", "") for x in all_reqs if x.startswith("git+")
+]
+
 
 class RunTests(Command):
     """Run all tests."""

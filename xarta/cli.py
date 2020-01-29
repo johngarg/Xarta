@@ -1,21 +1,23 @@
 """
 xarta
 
+
 Usage:
   xarta hello
-  xarta init <database-location>
-  xarta open <ref> [--pdf]
+  xarta init [<database-location>]
   xarta add <ref> [<tags> ...]
   xarta delete <ref>
   xarta edit <ref> [<tags> ...]
-  xarta browse [--all] [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [<tags> ...]
-  xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tags> ...]
-  xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf] [<tags> ...]
   xarta info <ref>
+  xarta open <ref> [--pdf]
+  xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf] [<tags> ...]
+  xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tags> ...]
+  xarta browse [--all] [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [<tags> ...]
   xarta list <obj> [--contains=<cont>]
   xarta export <export-path> [--bibtex] [<tags> ...]
   xarta -h | --help
   xarta --version
+
 
 Options:
   -h --help                         Show this screen.
@@ -29,13 +31,18 @@ Options:
   --filter=<fltr>                   Filter results using python logic statements. See Examples.
 
 
-The available commands are:
-  init                              Initialises the xarta database in '<database-location>/.xarta.d'. The location of the database is written to '~/.xarta'
+Some of the available commands are:
+  init                              Initialises the xarta database in '<database-location>/.xarta.d'. The location of the database is written to '~/.xarta'.
   add                               Add an arXiv ID, optionally with some tags.
   delete                            Remove and arXiv ID.
+  edit                              Updates the tags of a paper.
+  info                              Displays information about a paper.
   open                              Opens the abstract or pdf url of a paper.
-  browse                            Searches for and prints matching papers in the database
+  choose                            Choose a paper to open from a list of papers matching some criteria.
+  lucky                             Randomly choose a paper to open from a list of papers matching some criteria.
+  browse                            Prints all papers matching some criteria.
   list                              Lists tags or authors, optionally print only those containing some substring
+  export                            Exports libtrary to a bibtex bibliography.
 With the exception of the --filter option, all search conditions are connected by logical disjunction.
 
 
