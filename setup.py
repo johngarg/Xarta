@@ -9,11 +9,17 @@ from setuptools import Command, find_packages, setup
 
 from xarta import __version__
 
-
+# Get the long description from the README file
 this_dir = abspath(dirname(__file__))
 with open(join(this_dir, "README.md"), encoding="utf-8") as file:
     long_description = file.read()
 
+# get the dependencies and installs
+with open(join(this_dir, 'requirements.txt'), encoding='utf-8') as f:
+    all_reqs = f.read().split('\n')
+
+install_requires = [x.strip() for x in all_reqs if 'git+' not in x]
+dependency_links = [x.strip().replace('git+', '') for x in all_reqs if x.startswith('git+')]
 
 class RunTests(Command):
     """Run all tests."""
@@ -58,7 +64,8 @@ setup(
     ],
     keywords="cli",
     packages=find_packages(exclude=["docs", "tests*"]),
-    install_requires=["docopt"],
+    install_requires=install_requires,
+    dependency_links=dependency_links,
     extras_require={"test": ["coverage", "pytest", "pytest-cov"],},
     entry_points={"console_scripts": ["xarta=xarta.cli:main",],},
     cmdclass={"test": RunTests},
