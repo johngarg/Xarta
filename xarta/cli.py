@@ -5,7 +5,7 @@ Usage:
   xarta hello
   xarta init <database-location>
   xarta open <ref> [--pdf]
-  xarta add <ref> [--tag=<tg>]... [--download] [--local]
+  xarta add <ref> [--tag=<tg>]...
   xarta delete <ref>
   xarta edit <ref> [--tag=<tg>]...
   xarta browse [--all] [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>]
