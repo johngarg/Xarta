@@ -12,7 +12,7 @@ class Add(Base):
     def run(self):
         options = self.options
         ref = options["<ref>"]
-        tags = options["--tag"]
+        tags = options["<tags>"]
 
         database_path = read_xarta_file()
         paper_database = PaperDatabase(database_path)

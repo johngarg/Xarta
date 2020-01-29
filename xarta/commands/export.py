@@ -19,7 +19,7 @@ class Export(Base):
         options = self.options
         export_path = options["<export-path>"]
         bibtex = options["--bibtex"]
-        tags = options["--tag"]
+        tags = options["<tags>"]
 
         database_path = read_xarta_file()
         paper_database = PaperDatabase(database_path)

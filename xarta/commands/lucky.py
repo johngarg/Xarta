@@ -11,7 +11,7 @@ class Lucky(Base):
 
     def run(self):
         options = self.options
-        tag = options["--tag"]
+        tag = options["<tags>"]
         filter_ = options["--filter"]
         author = options["--author"]
         title = options["--title"]

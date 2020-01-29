@@ -6,16 +6,13 @@ from ..utils import read_xarta_file
 from ..database import PaperDatabase
 
 
-# xarta browse [--author=<auth>] [--tag=<tg>] [--title=<ttl>] [--ref=<ref>]
-
-
 class Browse(Base):
     """ List papers (by metadata). """
 
     def run(self):
         options = self.options
         ref = options["--ref"]
-        tag = options["--tag"]
+        tag = options["<tags>"]
         filter_ = options["--filter"]
         author = options["--author"]
         category = options["--category"]
