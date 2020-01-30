@@ -8,30 +8,18 @@ Usage:
   xarta init [<database-location>]
   xarta add <ref> [<tags> ...]
   xarta delete <ref>
-  xarta edit <ref> [<tags> ...]
   xarta info <ref>
   xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf] [<tags> ...]
   xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tags> ...]
   xarta browse [--all] [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [<tags> ...]
   xarta list <obj> [--contains=<cont>]
   xarta export <export-path> [--bibtex] [<tags> ...]
+  xarta edit <ref> [--action=<act>] [<tags> ...]
   xarta -h | --help
   xarta --version
 
 
-Options:
-  -h --help                         Show this screen.
-  --version                         Show version.
-  --pdf                             Open the pdf.
-  --author=<auth>                   Author metadata of the database entry.
-  --title=<ttl>                     Title metadata of the database entry.
-  --bibtex                          Option to export bibliography to bibtex file.
-  --download                        Option to save file locally for offline reading.
-  --local                           Option to add an already locally saved file to database.
-  --filter=<fltr>                   Filter results using python logic statements. See Examples.
-
-
-Some of the available commands are:
+Command descriptions:
   open                              Opens the abstract or pdf url of an arXiv ID, or an arXiv category's new submissions page. The paper does not need to be in the database.
   init                              Initialises the xarta database in '<database-location>/.xarta.d'. The location of the database is written to '~/.xarta'.
   add                               Add an arXiv ID, optionally with some tags.
@@ -43,7 +31,21 @@ Some of the available commands are:
   browse                            Prints all papers matching some criteria.
   list                              Lists tags or authors, optionally print only those containing some substring
   export                            Exports libtrary to a bibtex bibliography.
+  edit                              Set, add, or remove tags.
 With the exception of the --filter option, all search conditions are connected by logical disjunction.
+
+
+Options:
+  -h --help                         Show this screen.
+  --version                         Show version.
+  --pdf                             Open the pdf url, as opposed to the abstract url.
+  --author=<auth>                   Author metadata of the database entry.
+  --title=<ttl>                     Title metadata of the database entry.
+  --bibtex                          Option to export bibliography to bibtex file.
+  --download                        Option to save file locally for offline reading.
+  --local                           Option to add an already locally saved file to database.
+  --filter=<fltr>                   Filter results using python logic statements. See Examples.
+  --action=<act>                    Edit action, either 'set', 'add', or 'delete' tags [default: set]
 
 
 Examples:

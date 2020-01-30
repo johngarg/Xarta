@@ -77,10 +77,37 @@ class PaperDatabase:
 
         print(f"{paper_id} deleted from database!")
 
-    def edit_paper_tags(self, paper_id, new_tags):
-        """Edit paper tags in database."""
+    def get_tags(self, paper_id):
+        """Get list of tags for some paper"""
+        query_command = f"""SELECT tags FROM papers WHERE id={paper_id};"""
+
         conn = sqlite3.connect(self.path)
+        c = conn.cursor()
+        c.execute(query_command)
+        tags_string = c.fetchall()[0][0]
+        return utils.string_to_list(tags_string)
+
+    def edit_paper_tags(self, paper_id, tags, action):
+        """Edit paper tags in database."""
+        # first: remove duplicates in tags
+        tags = list(set(tags))
+        conn = sqlite3.connect(self.path)
+
         with conn:
+            if action == "set":
+                new_tags = tags
+            elif action == "add":
+                # add tags to old_tags, but dont add duplicates
+                old_tags = self.get_tags(paper_id)
+                tags = [tag for tag in tags if tag not in old_tags]
+                new_tags = old_tags + tags
+            elif action == "delete":
+                # remove tags from old_tags
+                old_tags = self.get_tags(paper_id)
+                new_tags = [tag for tag in old_tags if tag not in tags]
+            else:
+                raise Exception("Unkown edit action: " + action)
+
             new_tags = utils.list_to_string(new_tags)
             edit_tags_command = f"""UPDATE papers SET tags = "{new_tags}"
                                     WHERE id = "{paper_id}";"""
@@ -92,10 +119,11 @@ class PaperDatabase:
         """Query information about a paper in the database."""
         all_rows = utils.get_all_rows_from_db(self.path)
 
-        # get current console window dimensions
-        data = utils.format_data_term(all_rows)
         if not silent:
             from tabulate import tabulate
+
+            # get current console window dimensions
+            data = utils.format_data_term(all_rows)
 
             # prepend arXiv to ref to distinguish from cern doc server papers
             to_be_printed = []
@@ -133,7 +161,6 @@ class PaperDatabase:
         """
         library_data = self.query_papers(silent=True)
         data = []
-        lambda_prestring = "lambda ref, title, authors, category, tags: "
         col_names = ["ref", "title", "authors", "category", "tags"]
         for row in library_data:
             row_dict = dict(zip(col_names, row))
@@ -156,6 +183,7 @@ class PaperDatabase:
                         break  # Don't include same paper twice
                 continue
             elif filter_ is not None:
+                lambda_prestring = "lambda " + ", ".join(col_names) + ": "
                 if eval(lambda_prestring + filter_)(*row_dict.values()):
                     data.append(row)
                     continue
