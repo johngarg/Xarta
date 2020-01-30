@@ -2,7 +2,7 @@
 
 
 from .base import Base
-from ..utils import arxiv_open, read_xarta_file
+from ..utils import arxiv_open
 from ..database import PaperDatabase
 
 
@@ -19,8 +19,7 @@ class Choose(Base):
         category = options["--category"]
         title = options["--title"]
 
-        database_path = read_xarta_file()
-        paper_database = PaperDatabase(database_path)
+        paper_database = PaperDatabase()
         paper_data = paper_database.query_papers_contains(
             paper_id=ref,
             title=title,

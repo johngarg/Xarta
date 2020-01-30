@@ -2,7 +2,6 @@
 
 
 from .base import Base
-from ..utils import read_xarta_file
 from ..database import PaperDatabase
 
 
@@ -18,8 +17,7 @@ class Browse(Base):
         category = options["--category"]
         title = options["--title"]
 
-        database_path = read_xarta_file()
-        paper_database = PaperDatabase(database_path)
+        paper_database = PaperDatabase()
         if (ref or filter_ or author or category or title) is None and (
             tag is None or tag == []
         ):

@@ -4,7 +4,6 @@
 from arxivcheck.arxiv import check_arxiv_published
 
 from .base import Base
-from ..utils import read_xarta_file
 from ..database import PaperDatabase
 
 
@@ -20,8 +19,7 @@ class Export(Base):
         export_path = options["<export-path>"]
         tags = options["<tags>"]
 
-        database_path = read_xarta_file()
-        paper_database = PaperDatabase(database_path)
+        paper_database = PaperDatabase()
 
         if export_path is None:
             raise Exception("<export-path> unspecified.")

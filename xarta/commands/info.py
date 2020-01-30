@@ -2,7 +2,6 @@
 
 
 from .base import Base
-from ..utils import read_xarta_file
 from ..database import PaperDatabase
 
 
@@ -13,8 +12,7 @@ class Info(Base):
         options = self.options
         ref = options["<ref>"]
 
-        database_path = read_xarta_file()
-        paper_database = PaperDatabase(database_path)
+        paper_database = PaperDatabase()
         info = paper_database.query_papers_contains(
             paper_id=ref,
             title=None,

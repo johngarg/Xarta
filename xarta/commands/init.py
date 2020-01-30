@@ -2,7 +2,7 @@
 
 
 from .base import Base
-from ..database import PaperDatabase
+from ..database import initialise_database, write_database_location
 
 
 class Init(Base):
@@ -26,10 +26,8 @@ class Init(Base):
         database_path = database_location + "/db.sqlite3"
 
         if "db.sqlite3" not in os.listdir(database_location):
-            paper_database = PaperDatabase(database_path)
-            paper_database.create_connection()
-            paper_database.initialise_database()
+            initialise_database(database_path)
+            write_database_location(database_path)
         else:
-            print(database_path + " already exists. Updating ~/.xarta")
-            with open(os.path.expanduser("~") + "/.xarta", "w") as xarta_file:
-                xarta_file.write(database_path)
+            print(database_path + " already exists.")
+            write_database_location(database_path)

@@ -125,17 +125,6 @@ def string_to_list(string):
 #     return tag
 
 
-def read_xarta_file():
-    """Read database location from ~/.xarta file and returns path as string."""
-    home = os.path.expanduser("~")
-
-    try:
-        with open(home + "/.xarta", "r") as xarta_file:
-            return xarta_file.readline()
-    except:
-        raise Exception(f"Could not read {home}/.xarta")
-
-
 def dots_if_needed(s, max_chars):
     """If string `s` is longer than `max_chars`, return an abbreviated string
     with ellipsis.

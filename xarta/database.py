@@ -7,36 +7,46 @@ from . import utils
 HOME = os.path.expanduser("~")
 
 
+def initialise_database(database_path):
+    """Initialise database with empty table."""
+
+    print("Creating new database at " + database_path + "...")
+
+    init_command = """
+        CREATE TABLE papers
+        (id text, title text, authors text, category text, tags text);"""
+
+    conn = sqlite3.connect(database_path)
+    with conn:
+        print("Initialising database...")
+        conn.execute(init_command)
+
+    print("Database initialised!")
+
+
+def write_database_location(database_path, location_file=HOME + "/.xarta"):
+    """Write database location to a file, usually  ~/.xarta """
+    with open(location_file, "w") as xarta_file:
+        xarta_file.write(database_path)
+    print(f"Database location saved to {location_file}")
+
+
+def read_database_location(location_file):
+    """Read database location from a file, usually ~/.xarta, and return path as a string."""
+    try:
+        with open(location_file, "r") as xarta_file:
+            return xarta_file.readline()
+    except:
+        raise Exception(
+            f"Could not read database directory from '{location_file}'. Have you initialised a database?"
+        )
+
+
 class PaperDatabase:
     """The paper database interface."""
 
-    def __init__(self, path):
-        self.path = path
-
-    def create_connection(self):
-        """Create a database connection to a SQLite database."""
-        print("Creating new database at " + self.path + "...")
-
-        # Make sure connection works without errors
-        conn = sqlite3.connect(self.path)
-        conn.close()
-
-        # Database path written to .xarta file in home directory
-        with open(HOME + "/.xarta", "w") as xarta_file:
-            xarta_file.write(self.path)
-
-    def initialise_database(self):
-        """Initialise database with empty table."""
-        init_command = """
-            CREATE TABLE papers
-            (id text, title text, authors text, category text, tags text);"""
-
-        conn = sqlite3.connect(self.path)
-        with conn:
-            print("Initialising database...")
-            conn.execute(init_command)
-
-        print("Database initialised!")
+    def __init__(self, location_file=HOME + "/.xarta"):
+        self.path = read_database_location(location_file=location_file)
 
     def add_paper(self, paper_id, tags):
         """Add paper to database. paper_id is the arxiv number as a string. The

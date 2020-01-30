@@ -2,7 +2,6 @@
 
 
 from .base import Base
-from ..utils import read_xarta_file
 from ..database import PaperDatabase
 
 
@@ -14,7 +13,6 @@ class Add(Base):
         ref = options["<ref>"]
         tags = options["<tags>"]
 
-        database_path = read_xarta_file()
-        paper_database = PaperDatabase(database_path)
+        paper_database = PaperDatabase()
 
         paper_database.add_paper(paper_id=ref, tags=tags)

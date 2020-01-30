@@ -2,7 +2,6 @@
 
 
 from .base import Base
-from ..utils import read_xarta_file
 from ..database import PaperDatabase
 
 
@@ -15,7 +14,6 @@ class Edit(Base):
         tags = options["<tags>"]
         action = options["--action"]
 
-        database_path = read_xarta_file()
-        paper_database = PaperDatabase(database_path)
+        paper_database = PaperDatabase()
 
         paper_database.edit_paper_tags(paper_id=ref, tags=tags, action=action)
