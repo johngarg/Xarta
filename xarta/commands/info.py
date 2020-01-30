@@ -32,3 +32,4 @@ class Info(Base):
             print(f"Authors: {info[2]}")
             print(f"Category: {info[3]}")
             print(f"Tags: {info[4]}")
+            print(f"Alias: {info[5]}")

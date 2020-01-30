@@ -12,6 +12,7 @@ class Add(Base):
         options = self.options
         ref = options["<ref>"]
         tags = options["<tag>"]
+        alias = options["--alias"] or ""
 
         with PaperDatabase() as paper_database:
-            paper_database.add_paper(paper_id=ref, tags=tags)
+            paper_database.add_paper(paper_id=ref, tags=tags, alias=alias)

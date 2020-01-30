@@ -145,7 +145,7 @@ def dots_if_needed(s, max_chars):
         dots_if_needed('This is a very long string.', 12)
             #=> 'This is a ve...'
     """
-    if len(s) < max_chars:
+    if s is None or len(s) < max_chars:
         return s
     return s[: (max_chars - 3)] + "..."
 

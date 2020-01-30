@@ -5,14 +5,14 @@ xarta
 Usage:
   xarta hello
   xarta open <ref> [--pdf]
-  xarta init [<database-location>]
-  xarta add <ref> [<tag> ...]
+  xarta init <database-location>
+  xarta add <ref> [--alias=<alias>] [<tag> ...]
   xarta delete <ref>
   xarta info <ref>
   xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf] [<tag> ...]
   xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tag> ...]
   xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [<tag> ...]
-  xarta list (authors|tags) [--contains=<cont>]
+  xarta list (authors|tags|aliases) [--contains=<cont>]
   xarta export <export-path> [<tag> ...]
   xarta edit <ref> [--action=<act>] [<tag> ...]
   xarta -h | --help
@@ -29,7 +29,7 @@ Command descriptions:
   choose                            Choose a paper to open from a list of papers matching some criteria.
   lucky                             Randomly choose a paper to open from a list of papers matching some criteria.
   browse                            Prints all papers, optionally showing only those matching some criteria.
-  list                              Lists authors or tags, optionally print only those containing some substring
+  list                              Lists authors, tags, or aliases. Optionally print only those containing some substring
   export                            Exports libtrary to a bibtex bibliography.
   edit                              Set, add, or delete tags.
 With the exception of the --filter option, all search conditions are connected by logical disjunction.
