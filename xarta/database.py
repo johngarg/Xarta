@@ -232,7 +232,7 @@ class PaperDatabase:
                     data.append(row)
                     continue
 
-        if not silent:
+        if len(data) > 0 and not silent:
             from tabulate import tabulate
 
             short_data = utils.format_data_term(data, select)
