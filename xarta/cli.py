@@ -31,7 +31,7 @@ Command descriptions:
   browse                            Prints all papers, optionally showing only those matching some criteria.
   list                              Lists tags or authors, optionally print only those containing some substring
   export                            Exports libtrary to a bibtex bibliography.
-  edit                              Set, add, or remove tags.
+  edit                              Set, add, or delete tags.
 With the exception of the --filter option, all search conditions are connected by logical disjunction.
 
 
@@ -56,7 +56,7 @@ Examples:
   xarta browse neutrino-mass
   xarta browse --filter="'John' in authors and ('neutrino' in tags or 'leptoquarks' in tags)"
   xarta export ~/Desktop
-  xarta remove 1704.05849
+  xarta delete 1704.05849
 
 
 Help:
