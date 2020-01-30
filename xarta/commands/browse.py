@@ -17,18 +17,18 @@ class Browse(Base):
         category = options["--category"]
         title = options["--title"]
 
-        paper_database = PaperDatabase()
-        if (ref or filter_ or author or category or title) is None and (
-            tag is None or tag == []
-        ):
-            # no search criteria, show all papers
-            paper_database.query_papers()
-        else:
-            paper_database.query_papers_contains(
-                paper_id=ref,
-                title=title,
-                author=author,
-                category=category,
-                tags=tag,
-                filter_=filter_,
-            )
+        with PaperDatabase() as paper_database:
+            if (ref or filter_ or author or category or title) is None and (
+                tag is None or tag == []
+            ):
+                # no search criteria, show all papers
+                paper_database.print_all_papers()
+            else:
+                paper_database.query_papers(
+                    paper_id=ref,
+                    title=title,
+                    author=author,
+                    category=category,
+                    tags=tag,
+                    filter_=filter_,
+                )

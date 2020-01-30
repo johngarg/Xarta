@@ -55,6 +55,8 @@ Examples:
   xarta browse
   xarta browse neutrino-mass
   xarta browse --filter="'John' in authors and ('neutrino' in tags or 'leptoquarks' in tags)"
+  xarta list tags
+  xarta list authors
   xarta export ~/Desktop
   xarta delete 1704.05849
 

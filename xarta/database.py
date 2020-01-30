@@ -7,46 +7,84 @@ from . import utils
 HOME = os.path.expanduser("~")
 
 
-def initialise_database(database_path):
-    """Initialise database with empty table."""
+def initialise_database(database_location, config_file=HOME + "/.xarta"):
+    """Initialise database with empty table and update file that points to database.
+    If database already exists, just update the file"""
 
-    print("Creating new database at " + database_path + "...")
+    # resolve relative paths, e.g., 'xarta init ./'
+    database_location = os.path.abspath(database_location)
 
-    init_command = """
-        CREATE TABLE papers
-        (id text, title text, authors text, category text, tags text);"""
+    # verify folder exists
+    if not os.path.isdir(database_location):
+        raise Exception("Directory does not exist.")
 
-    conn = sqlite3.connect(database_path)
-    with conn:
-        print("Initialising database...")
-        conn.execute(init_command)
+    # create xarta directory
+    database_location += "/.xarta.d"
+    os.makedirs(database_location, exist_ok=True)
+    database_path = database_location + "/db.sqlite3"
 
-    print("Database initialised!")
+    # check if file already exists
+    if "db.sqlite3" not in os.listdir(database_location):
+
+        print("Creating new database at " + database_path + "...")
+
+        init_command = """
+            CREATE TABLE papers
+            (id text, title text, authors text, category text, tags text);"""
+
+        with sqlite3.connect(database_path) as connection:
+            print("Initialising database...")
+            connection.execute(init_command)
+        connection.close()
+
+        print("Database initialised!")
+    else:
+
+        print(database_path + " already exists.")
+
+    write_database_path(database_path, config_file=config_file)
 
 
-def write_database_location(database_path, location_file=HOME + "/.xarta"):
+def write_database_path(database_path, config_file):
     """Write database location to a file, usually  ~/.xarta """
-    with open(location_file, "w") as xarta_file:
+    with open(config_file, "w") as xarta_file:
         xarta_file.write(database_path)
-    print(f"Database location saved to {location_file}")
+    print(f"Database location saved to {config_file}")
 
 
-def read_database_location(location_file):
+def read_database_path(config_file):
     """Read database location from a file, usually ~/.xarta, and return path as a string."""
     try:
-        with open(location_file, "r") as xarta_file:
+        with open(config_file, "r") as xarta_file:
             return xarta_file.readline()
     except:
         raise Exception(
-            f"Could not read database directory from '{location_file}'. Have you initialised a database?"
+            f"Could not read database directory from '{config_file}'. Have you initialised a database?"
         )
 
 
 class PaperDatabase:
     """The paper database interface."""
 
-    def __init__(self, location_file=HOME + "/.xarta"):
-        self.path = read_database_location(location_file=location_file)
+    def __init__(self, path=None, config_file=HOME + "/.xarta"):
+        self.config_file = config_file
+        self.path = path
+        self.connection = None
+        self.cursor = None
+
+    def __enter__(self):
+        if self.path is None:
+            self.path = read_database_path(self.config_file)
+        self.connection = sqlite3.connect(self.path)
+        self.cursor = self.connection.cursor()
+        return self
+
+    def __exit__(self, error_type, value, traceback):
+        if traceback is None:
+            self.connection.commit()
+        else:
+            self.connection.rollback()
+        self.connection.close()
 
     def add_paper(self, paper_id, tags):
         """Add paper to database. paper_id is the arxiv number as a string. The
@@ -61,29 +99,25 @@ class PaperDatabase:
         if self.contains(paper_id):
             raise Exception("This paper is already in the database.")
 
-        conn = sqlite3.connect(self.path)
-        with conn:
-            data = utils.get_arxiv_data(paper_id)
-            authors = utils.list_to_string(data["authors"])
-            # tags = [utils.expand_tag(tag, data) for tag in tags]
-            tags = utils.list_to_string(tags)
-            title, category = data["title"], data["category"]
-            insert_command = f"""
-                INSERT INTO papers
-                (id, title, authors, category, tags)
-                VALUES
-                ("{paper_id}", "{title}", "{authors}", "{category}", "{tags}");"""
+        data = utils.get_arxiv_data(paper_id)
+        authors = utils.list_to_string(data["authors"])
+        # tags = [utils.expand_tag(tag, data) for tag in tags]
+        tags = utils.list_to_string(tags)
+        title, category = data["title"], data["category"]
+        insert_command = f"""
+            INSERT INTO papers
+            (id, title, authors, category, tags)
+            VALUES
+            ("{paper_id}", "{title}", "{authors}", "{category}", "{tags}");"""
 
-            conn.execute(insert_command)
+        self.cursor.execute(insert_command)
 
         print(f"{paper_id} added to database!")
 
     def delete_paper(self, paper_id):
         """Remove paper from database."""
-        conn = sqlite3.connect(self.path)
-        with conn:
-            delete_command = f"""DELETE FROM papers WHERE id = "{paper_id}";"""
-            conn.execute(delete_command)
+        delete_command = f"""DELETE FROM papers WHERE id = "{paper_id}";"""
+        self.cursor.execute(delete_command)
 
         print(f"{paper_id} deleted from database!")
 
@@ -91,63 +125,62 @@ class PaperDatabase:
         """Get list of tags for some paper"""
         query_command = f"""SELECT tags FROM papers WHERE id={paper_id};"""
 
-        conn = sqlite3.connect(self.path)
-        c = conn.cursor()
-        c.execute(query_command)
-        tags_string = c.fetchall()[0][0]
+        self.cursor.execute(query_command)
+        tags_string = self.cursor.fetchall()[0][0]
         return utils.string_to_list(tags_string)
 
     def edit_paper_tags(self, paper_id, tags, action):
         """Edit paper tags in database."""
         # first: remove duplicates in tags
         tags = list(set(tags))
-        conn = sqlite3.connect(self.path)
 
-        with conn:
-            if action == "set":
-                new_tags = tags
-            elif action == "add":
-                # add tags to old_tags, but dont add duplicates
-                old_tags = self.get_tags(paper_id)
-                tags = [tag for tag in tags if tag not in old_tags]
-                new_tags = old_tags + tags
-            elif action == "delete":
-                # remove tags from old_tags
-                old_tags = self.get_tags(paper_id)
-                new_tags = [tag for tag in old_tags if tag not in tags]
-            else:
-                raise Exception("Unkown edit action: " + action)
+        if action == "set":
+            new_tags = tags
+        elif action == "add":
+            # add tags to old_tags, but dont add duplicates
+            old_tags = self.get_tags(paper_id)
+            tags = [tag for tag in tags if tag not in old_tags]
+            new_tags = old_tags + tags
+        elif action == "delete":
+            # remove tags from old_tags
+            old_tags = self.get_tags(paper_id)
+            new_tags = [tag for tag in old_tags if tag not in tags]
+        else:
+            raise Exception("Unkown edit action: " + action)
 
-            new_tags = utils.list_to_string(new_tags)
-            edit_tags_command = f"""UPDATE papers SET tags = "{new_tags}"
-                                    WHERE id = "{paper_id}";"""
-            conn.execute(edit_tags_command)
+        new_tags = utils.list_to_string(new_tags)
+        edit_tags_command = f"""UPDATE papers SET tags = "{new_tags}"
+                                WHERE id = "{paper_id}";"""
+        self.cursor.execute(edit_tags_command)
 
         print(f"{paper_id} now has the following tags in the database: {new_tags}")
 
-    def query_papers(self, silent=False):
-        """Query information about a paper in the database."""
-        all_rows = utils.get_all_rows_from_db(self.path)
+    def get_all_papers(self):
+        """Get all papers"""
+        query_command = f"""SELECT * FROM papers;"""
+        self.cursor.execute(query_command)
+        return self.cursor.fetchall()
 
-        if not silent:
-            from tabulate import tabulate
+    def print_all_papers(self):
+        """Print a table of all the papers"""
+        library_data = self.get_all_papers()
 
-            # get current console window dimensions
-            data = utils.format_data_term(all_rows)
+        from tabulate import tabulate
 
-            # prepend arXiv to ref to distinguish from cern doc server papers
-            to_be_printed = []
-            for row in data:
-                new_row = row
-                new_row[0] = "arXiv:" + row[0]
-                to_be_printed.append(new_row)
+        # get current console window dimensions
+        data = utils.format_data_term(library_data)
 
-            col_names = ["Ref", "Title", "Authors", "Category", "Tags"]
-            print(tabulate(to_be_printed, headers=col_names, tablefmt="simple"))
+        # prepend arXiv to ref to distinguish from cern doc server papers
+        to_be_printed = []
+        for row in data:
+            new_row = row
+            new_row[0] = "arXiv:" + row[0]
+            to_be_printed.append(new_row)
 
-        return all_rows
+        col_names = ["Ref", "Title", "Authors", "Category", "Tags"]
+        print(tabulate(to_be_printed, headers=col_names, tablefmt="simple"))
 
-    def query_papers_contains(
+    def query_papers(
         self,
         paper_id,
         title,
@@ -169,7 +202,7 @@ class PaperDatabase:
         will return every paper in the database from 'hep-th' as well as those
         by 'Weinberg'.
         """
-        library_data = self.query_papers(silent=True)
+        library_data = self.get_all_papers()
         data = []
         col_names = ["ref", "title", "authors", "category", "tags"]
         for row in library_data:
@@ -218,7 +251,7 @@ class PaperDatabase:
         """Returns a boolean identifying if an entry with reference `ref`
         exists within the database.
         """
-        search_results = self.query_papers_contains(
+        search_results = self.query_papers(
             paper_id=ref,
             title=None,
             author=None,

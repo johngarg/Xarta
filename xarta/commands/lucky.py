@@ -17,14 +17,14 @@ class Lucky(Base):
         title = options["--title"]
         pdf = options["--pdf"]
 
-        paper_database = PaperDatabase()
-        ans = paper_database.query_papers_contains(
-            paper_id=None,
-            category=None,
-            title=title,
-            author=author,
-            tags=tag,
-            filter_=filter_,
-        )
-        lucky_paper_ref = ans[0][0]
-        arxiv_open(lucky_paper_ref, pdf)
+        with PaperDatabase() as paper_database:
+            ans = paper_database.query_papers(
+                paper_id=None,
+                category=None,
+                title=title,
+                author=author,
+                tags=tag,
+                filter_=filter_,
+            )
+            lucky_paper_ref = ans[0][0]
+            arxiv_open(lucky_paper_ref, pdf)

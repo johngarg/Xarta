@@ -14,6 +14,5 @@ class Edit(Base):
         tags = options["<tags>"]
         action = options["--action"]
 
-        paper_database = PaperDatabase()
-
-        paper_database.edit_paper_tags(paper_id=ref, tags=tags, action=action)
+        with PaperDatabase() as paper_database:
+            paper_database.edit_paper_tags(paper_id=ref, tags=tags, action=action)

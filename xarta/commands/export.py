@@ -19,31 +19,31 @@ class Export(Base):
         export_path = options["<export-path>"]
         tags = options["<tags>"]
 
-        paper_database = PaperDatabase()
-
         if export_path is None:
             raise Exception("<export-path> unspecified.")
 
-        if tags != []:
-            good_papers = paper_database.query_papers_contains(
-                paper_id=None,
-                title=None,
-                author=None,
-                category=None,
-                tags=tags,
-                filter_=None,
-                silent=True,
-            )
-        else:
-            good_papers = paper_database.query_papers(silent=True)
+        with PaperDatabase() as paper_database:
 
-        good_paper_refs = [paper_data[0] for paper_data in good_papers]
+            if tags != []:
+                good_papers = paper_database.query_papers(
+                    paper_id=None,
+                    title=None,
+                    author=None,
+                    category=None,
+                    tags=tags,
+                    filter_=None,
+                    silent=True,
+                )
+            else:
+                good_papers = paper_database.get_all_papers()
 
-        with open(export_path + "/xarta.bib", "w+") as f:
-            for ref in good_paper_refs:
-                bib_info = check_arxiv_published(ref)
-                if bib_info[0]:
-                    print("Writing bibtex entry for " + ref)
-                    f.write(bib_info[2] + "\n\n")
+            good_paper_refs = [paper_data[0] for paper_data in good_papers]
 
-            print(export_path + "/xarta.bib" + " successfully written!")
+            with open(export_path + "/xarta.bib", "w+") as f:
+                for ref in good_paper_refs:
+                    bib_info = check_arxiv_published(ref)
+                    if bib_info[0]:
+                        print("Writing bibtex entry for " + ref)
+                        f.write(bib_info[2] + "\n\n")
+
+                print(export_path + "/xarta.bib" + " successfully written!")

@@ -19,17 +19,17 @@ class Choose(Base):
         category = options["--category"]
         title = options["--title"]
 
-        paper_database = PaperDatabase()
-        paper_data = paper_database.query_papers_contains(
-            paper_id=ref,
-            title=title,
-            author=author,
-            category=category,
-            tags=tag,
-            filter_=filter_,
-            select=True,
-        )
+        with PaperDatabase() as paper_database:
+            paper_data = paper_database.query_papers(
+                paper_id=ref,
+                title=title,
+                author=author,
+                category=category,
+                tags=tag,
+                filter_=filter_,
+                select=True,
+            )
 
-        choice = int(input("Paper to open: "))
-        ref_to_open = paper_data[choice][0]
-        arxiv_open(ref_to_open, pdf=pdf)
+            choice = int(input("Paper to open: "))
+            ref_to_open = paper_data[choice][0]
+            arxiv_open(ref_to_open, pdf=pdf)

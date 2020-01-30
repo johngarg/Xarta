@@ -12,20 +12,20 @@ class Info(Base):
         options = self.options
         ref = options["<ref>"]
 
-        paper_database = PaperDatabase()
-        info = paper_database.query_papers_contains(
-            paper_id=ref,
-            title=None,
-            author=None,
-            category=None,
-            tags=[],
-            filter_=None,
-            silent=True,
-        )
+        with PaperDatabase() as paper_database:
+            info = paper_database.query_papers(
+                paper_id=ref,
+                title=None,
+                author=None,
+                category=None,
+                tags=[],
+                filter_=None,
+                silent=True,
+            )
 
-        info = info[0]
-        print(f"arXiv Ref: {info[0]}")
-        print(f"Title: {info[1]}")
-        print(f"Authors: {info[2]}")
-        print(f"Category: {info[3]}")
-        print(f"Tags: {info[4]}")
+            info = info[0]
+            print(f"arXiv Ref: {info[0]}")
+            print(f"Title: {info[1]}")
+            print(f"Authors: {info[2]}")
+            print(f"Category: {info[3]}")
+            print(f"Tags: {info[4]}")

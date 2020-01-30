@@ -152,15 +152,3 @@ def format_data_term(data, select=False):
         short_data.append(short_row)
 
     return short_data
-
-
-def get_all_rows_from_db(path):
-    query_command = f"""SELECT * FROM papers;"""
-
-    conn = sqlite3.connect(path)
-    c = conn.cursor()
-    query_results = c.execute(query_command)
-    all_rows = c.fetchall()
-    c.close()
-
-    return all_rows
