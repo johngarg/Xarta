@@ -39,17 +39,6 @@ class XartaError(Exception):
     pass
 
 
-class PaperReferenceError(XartaError):
-    """An error raised by Xarta if a given reference is not valid. The error message depends on whether or not the type of reference has been recognised"""
-
-    def __init__(self, ref, *kargs, **kwargs):
-        self.ref = ref
-        super().__init__(*kargs, **kwargs)
-
-    def __str__(self):
-        return "Not a valid arXiv reference: " + self.ref
-
-
 if platform.startswith("linux"):
     OPEN_COMMAND = "xdg-open "
 elif platform.startswith("darwin"):
@@ -67,7 +56,7 @@ def is_valid_ref(paper_id):
     """Returns True if s is a valid arXiv reference."""
     is_new_arxiv_ref = bool(re.match("\d{4}\.\d+", paper_id))
     is_old_arxiv_ref = bool(re.match("[\w\-\.]+\/\d+", paper_id))
-    return is_new_arxiv_ref or is_old_arxiv_ref
+    return is_new_arxiv_ref or is_old_arxiv_ref or is_arxiv_category(ref)
 
 
 def process_ref(paper_id, verbose=True):
@@ -81,7 +70,7 @@ def process_ref(paper_id, verbose=True):
     proc_paper_id = re.sub("^\s*arxiv[:\- ]", "", paper_id, flags=re.IGNORECASE)
     if proc_paper_id != paper_id and verbose:
         match = re.search("^\s*arxiv[:\- ]", paper_id, flags=re.IGNORECASE)[0]
-        print("Stripping leading '" + match + "'")
+        print("Stripping leading '" + match + "'.")
 
     return proc_paper_id
 
@@ -89,17 +78,12 @@ def process_ref(paper_id, verbose=True):
 def arxiv_open(ref, pdf=False):
     """Opens arxiv ref in browser."""
 
-    ref = process_ref(ref)
-
     if is_arxiv_category(ref):
         os.system(OPEN_COMMAND + " https://arxiv.org/list/" + ref + "/new")
-    elif is_valid_ref(ref):
-        if pdf:
-            os.system(OPEN_COMMAND + " https://arxiv.org/pdf/" + ref + ".pdf")
-        else:
-            os.system(OPEN_COMMAND + " https://arxiv.org/abs/" + ref)
+    elif pdf:
+        os.system(OPEN_COMMAND + " https://arxiv.org/pdf/" + ref + ".pdf")
     else:
-        raise PaperReferenceError(ref=ref)
+        os.system(OPEN_COMMAND + " https://arxiv.org/abs/" + ref)
 
 
 def get_arxiv_data(ref):

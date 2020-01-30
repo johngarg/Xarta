@@ -3,7 +3,7 @@
 import sqlite3
 import os
 from . import utils
-from .utils import XartaError, PaperReferenceError
+from .utils import XartaError
 
 
 HOME = os.path.expanduser("~")
@@ -92,11 +92,6 @@ class PaperDatabase:
         """Add paper to database. paper_id is the arxiv number as a string. The
         tags are a list of strings.
         """
-        # clean id
-        paper_id = utils.process_ref(paper_id)
-
-        if not utils.is_valid_ref(paper_id):
-            raise PaperReferenceError(ref=paper_id)
 
         if self.contains(paper_id):
             raise XartaError("This paper is already in the database.")

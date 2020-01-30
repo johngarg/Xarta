@@ -66,6 +66,7 @@ Help:
   https://github.com/johngarg/Xarta
 """
 
+import sys
 
 from inspect import getmembers, isclass
 
@@ -73,7 +74,7 @@ from docopt import docopt
 
 from . import __version__ as VERSION
 
-from .utils import XartaError
+from .utils import XartaError, is_valid_ref, process_ref
 
 
 def main():
@@ -91,6 +92,15 @@ def main():
             command = [
                 command[1] for command in xarta.commands if command[0] != "Base"
             ][0]
+
+            # process and check validity of any arxiv IDs
+            for opt in ["<ref>", "--ref"]:
+                if options[opt]:
+                    options[opt] = process_ref(options[opt])
+                    if not is_valid_ref(options[opt]):
+                        print("Not a valid arXiv reference: " + options[opt])
+                        sys.exit(1)
+
             command = command(options)
             try:
                 command.run()
