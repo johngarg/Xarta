@@ -52,10 +52,10 @@ def is_arxiv_category(s):
     return s in ARXIV_CATEGORIES
 
 
-def is_valid_ref(paper_id):
+def is_valid_ref(ref):
     """Returns True if s is a valid arXiv reference."""
-    is_new_arxiv_ref = bool(re.match("\d{4}\.\d+", paper_id))
-    is_old_arxiv_ref = bool(re.match("[\w\-\.]+\/\d+", paper_id))
+    is_new_arxiv_ref = bool(re.match("\d{4}\.\d+", ref))
+    is_old_arxiv_ref = bool(re.match("[\w\-\.]+\/\d+", ref))
     return is_new_arxiv_ref or is_old_arxiv_ref or is_arxiv_category(ref)
 
 
