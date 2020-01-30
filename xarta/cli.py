@@ -13,7 +13,7 @@ Usage:
   xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tags> ...]
   xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [<tags> ...]
   xarta list <obj> [--contains=<cont>]
-  xarta export <export-path> [--bibtex] [<tags> ...]
+  xarta export <export-path> [<tags> ...]
   xarta edit <ref> [--action=<act>] [<tags> ...]
   xarta -h | --help
   xarta --version
@@ -41,7 +41,6 @@ Options:
   --pdf                             Open the pdf url, as opposed to the abstract url.
   --author=<auth>                   Author metadata of the database entry.
   --title=<ttl>                     Title metadata of the database entry.
-  --bibtex                          Option to export bibliography to bibtex file.
   --download                        Option to save file locally for offline reading.
   --local                           Option to add an already locally saved file to database.
   --filter=<fltr>                   Filter results using python logic statements. See Examples.
@@ -56,7 +55,7 @@ Examples:
   xarta browse
   xarta browse neutrino-mass
   xarta browse --filter="'John' in authors and ('neutrino' in tags or 'leptoquarks' in tags)"
-  xarta export ~/Desktop/ --bibtex
+  xarta export ~/Desktop
   xarta remove 1704.05849
 
 

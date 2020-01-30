@@ -18,14 +18,10 @@ class Export(Base):
     def run(self):
         options = self.options
         export_path = options["<export-path>"]
-        bibtex = options["--bibtex"]
         tags = options["<tags>"]
 
         database_path = read_xarta_file()
         paper_database = PaperDatabase(database_path)
-
-        if not bibtex:
-            raise Exception("Currently bibtex is the only supported export format.")
 
         if export_path is None:
             raise Exception("<export-path> unspecified.")
@@ -45,12 +41,11 @@ class Export(Base):
 
         good_paper_refs = [paper_data[0] for paper_data in good_papers]
 
-        if bibtex:
-            with open(export_path + "xarta.bib", "w+") as f:
-                for ref in good_paper_refs:
-                    bib_info = check_arxiv_published(ref)
-                    if bib_info[0]:
-                        print("Writing bibtex entry for " + ref)
-                        f.write(bib_info[2] + "\n\n")
+        with open(export_path + "/xarta.bib", "w+") as f:
+            for ref in good_paper_refs:
+                bib_info = check_arxiv_published(ref)
+                if bib_info[0]:
+                    print("Writing bibtex entry for " + ref)
+                    f.write(bib_info[2] + "\n\n")
 
-            print(export_path + "xarta.bib" + " successfully written!")
+            print(export_path + "/xarta.bib" + " successfully written!")
