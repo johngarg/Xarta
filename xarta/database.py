@@ -55,7 +55,7 @@ class PaperDatabase:
         with conn:
             data = utils.get_arxiv_data(paper_id)
             authors = utils.list_to_string(data["authors"])
-            tags = [utils.expand_tag(tag, data) for tag in tags]
+            # tags = [utils.expand_tag(tag, data) for tag in tags]
             tags = utils.list_to_string(tags)
             title, category = data["title"], data["category"]
             insert_command = f"""

@@ -115,11 +115,14 @@ def string_to_list(string):
     return string.split("; ")
 
 
-def expand_tag(tag, dic):
-    if tag[0] == "#":
-        return dic[tag[1:]]
+# As far as I can tell, this is used to generate tags using information from the arxiv. e.g., #title would expand to the title of the paper.
+# Currently, all of the information that could be expanded like this (id,title,authors,category) is ALREADY added to the database. Generating such tags seems useless?
+# def expand_tag(tag, dic):
+#     breakpoint()
+#     if tag[0] == "#":
+#         return dic[tag[1:]]
 
-    return tag
+#     return tag
 
 
 def read_xarta_file():
