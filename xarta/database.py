@@ -110,11 +110,12 @@ class PaperDatabase:
         return aliases
 
     def resolve_alias(self, alias):
-        """Find the paper_id associated with an alias"""
+        """Find the paper_id associated with an alias. Return False if the alias does
+        not exist"""
         self.cursor.execute(f'SELECT id FROM papers WHERE alias="{alias}"')
         results = self.cursor.fetchall()
         if not results:
-            raise XartaError("Alias does not exist!")
+            return False
         return results[0][0]
 
     def add_paper(self, paper_id, tags, alias):
