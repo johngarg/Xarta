@@ -105,6 +105,16 @@ def list_to_string(lst):
     return "; ".join(lst)
 
 
+def string_to_list(string):
+    """Takes a string and splits into a list of strings separated by semicolons. In
+    effect, the inverse operation of list_to_string().
+    e.g.
+        string_to_list('John; Alice')
+            #=> ['John', 'Alice']
+    """
+    return string.split("; ")
+
+
 def expand_tag(tag, dic):
     if tag[0] == "#":
         return dic[tag[1:]]
