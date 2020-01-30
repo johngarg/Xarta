@@ -3,6 +3,7 @@
 
 from .base import Base
 from ..database import PaperDatabase
+from ..utils import XartaError
 
 
 class Info(Base):
@@ -23,6 +24,8 @@ class Info(Base):
                 silent=True,
             )
 
+            if len(info) == 0:
+                raise XartaError("Paper not found.")
             info = info[0]
             print(f"arXiv Ref: {info[0]}")
             print(f"Title: {info[1]}")

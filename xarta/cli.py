@@ -96,4 +96,4 @@ def main():
                 command.run()
             except XartaError as err:
                 # Error is of type XartaError, an 'expected' error due to bad user input. Print the error.
-                print("Error: " + str(err))
+                print(str(err))
