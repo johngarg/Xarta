@@ -42,15 +42,12 @@ class XartaError(Exception):
 class PaperReferenceError(XartaError):
     """An error raised by Xarta if a given reference is not valid. The error message depends on whether or not the type of reference has been recognised"""
 
-    def __init__(self, ref, ref_type=None):
+    def __init__(self, ref, *kargs, **kwargs):
         self.ref = ref
-        self.ref_type = ref_type
-        super().__init__()
+        super().__init__(*kargs, **kwargs)
 
     def __str__(self):
-        if self.ref_type is not None:
-            return "Not a valid " + self.ref_type + " reference: " + self.ref
-        return "Not a recognised paper reference: " + self.ref
+        return "Not a valid arXiv reference: " + self.ref
 
 
 if platform.startswith("linux"):
@@ -73,17 +70,27 @@ def is_valid_ref(paper_id):
     return is_new_arxiv_ref or is_old_arxiv_ref
 
 
-def processed_ref(paper_id, verbose=True):
+def process_ref(paper_id, verbose=True):
     # strip version
     proc_paper_id = re.sub("v[0-9]+$", "", paper_id)
     if proc_paper_id != paper_id and verbose:
         print("Stripping version from paper ID.")
+
+    # remove leading arxiv, i.e., such that paper_id='    arXiv: 2001.1234' is still valid
+    paper_id = proc_paper_id
+    proc_paper_id = re.sub("^\s*arxiv[:\- ]", "", paper_id, flags=re.IGNORECASE)
+    if proc_paper_id != paper_id and verbose:
+        match = re.search("^\s*arxiv[:\- ]", paper_id, flags=re.IGNORECASE)[0]
+        print("Stripping leading '" + match + "'")
 
     return proc_paper_id
 
 
 def arxiv_open(ref, pdf=False):
     """Opens arxiv ref in browser."""
+
+    ref = process_ref(ref)
+
     if is_arxiv_category(ref):
         os.system(OPEN_COMMAND + " https://arxiv.org/list/" + ref + "/new")
     elif is_valid_ref(ref):

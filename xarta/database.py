@@ -93,7 +93,7 @@ class PaperDatabase:
         tags are a list of strings.
         """
         # clean id
-        paper_id = utils.processed_ref(paper_id)
+        paper_id = utils.process_ref(paper_id)
 
         if not utils.is_valid_ref(paper_id):
             raise PaperReferenceError(ref=paper_id)
