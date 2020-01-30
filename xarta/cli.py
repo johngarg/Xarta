@@ -11,7 +11,7 @@ Usage:
   xarta info <ref>
   xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf] [<tags> ...]
   xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tags> ...]
-  xarta browse [--all] [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [<tags> ...]
+  xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [<tags> ...]
   xarta list <obj> [--contains=<cont>]
   xarta export <export-path> [--bibtex] [<tags> ...]
   xarta edit <ref> [--action=<act>] [<tags> ...]
@@ -28,7 +28,7 @@ Command descriptions:
   info                              Displays information about a paper. Unlike 'xarta open', the paper must be in the database.
   choose                            Choose a paper to open from a list of papers matching some criteria.
   lucky                             Randomly choose a paper to open from a list of papers matching some criteria.
-  browse                            Prints all papers matching some criteria.
+  browse                            Prints all papers, optionally showing only those matching some criteria.
   list                              Lists tags or authors, optionally print only those containing some substring
   export                            Exports libtrary to a bibtex bibliography.
   edit                              Set, add, or remove tags.
@@ -53,6 +53,7 @@ Examples:
   xarta open 1704.05849 --pdf
   xarta open hep-ph
   xarta add 1704.05849 leptoquarks neutrino-mass flavour-anomalies
+  xarta browse
   xarta browse neutrino-mass
   xarta browse --filter="'John' in authors and ('neutrino' in tags or 'leptoquarks' in tags)"
   xarta export ~/Desktop/ --bibtex

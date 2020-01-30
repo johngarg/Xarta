@@ -17,11 +17,13 @@ class Browse(Base):
         author = options["--author"]
         category = options["--category"]
         title = options["--title"]
-        all_flag = options["--all"]
 
         database_path = read_xarta_file()
         paper_database = PaperDatabase(database_path)
-        if all_flag:
+        if (ref or filter_ or author or category or title) is None and (
+            tag is None or tag == []
+        ):
+            # no search criteria, show all papers
             paper_database.query_papers()
         else:
             paper_database.query_papers_contains(
