@@ -11,7 +11,7 @@ class Browse(Base):
     def run(self):
         options = self.options
         ref = options["--ref"]
-        tag = options["<tags>"]
+        tag = options["<tag>"]
         filter_ = options["--filter"]
         author = options["--author"]
         category = options["--category"]

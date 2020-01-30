@@ -11,7 +11,7 @@ class Edit(Base):
     def run(self):
         options = self.options
         ref = options["<ref>"]
-        tags = options["<tags>"]
+        tags = options["<tag>"]
         action = options["--action"]
 
         with PaperDatabase() as paper_database:

@@ -17,7 +17,7 @@ class Export(Base):
     def run(self):
         options = self.options
         export_path = options["<export-path>"]
-        tags = options["<tags>"]
+        tags = options["<tag>"]
 
         if export_path is None:
             raise Exception("<export-path> unspecified.")

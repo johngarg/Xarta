@@ -6,15 +6,15 @@ Usage:
   xarta hello
   xarta open <ref> [--pdf]
   xarta init [<database-location>]
-  xarta add <ref> [<tags> ...]
+  xarta add <ref> [<tag> ...]
   xarta delete <ref>
   xarta info <ref>
-  xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf] [<tags> ...]
-  xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tags> ...]
-  xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [<tags> ...]
-  xarta list <obj> [--contains=<cont>]
-  xarta export <export-path> [<tags> ...]
-  xarta edit <ref> [--action=<act>] [<tags> ...]
+  xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf] [<tag> ...]
+  xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tag> ...]
+  xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [<tag> ...]
+  xarta list (authors|tags) [--contains=<cont>]
+  xarta export <export-path> [<tag> ...]
+  xarta edit <ref> [--action=<act>] [<tag> ...]
   xarta -h | --help
   xarta --version
 
@@ -29,7 +29,7 @@ Command descriptions:
   choose                            Choose a paper to open from a list of papers matching some criteria.
   lucky                             Randomly choose a paper to open from a list of papers matching some criteria.
   browse                            Prints all papers, optionally showing only those matching some criteria.
-  list                              Lists tags or authors, optionally print only those containing some substring
+  list                              Lists authors or tags, optionally print only those containing some substring
   export                            Exports libtrary to a bibtex bibliography.
   edit                              Set, add, or delete tags.
 With the exception of the --filter option, all search conditions are connected by logical disjunction.

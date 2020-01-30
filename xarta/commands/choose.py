@@ -14,7 +14,7 @@ class Choose(Base):
         pdf = options["--pdf"]
         ref = options["--ref"]
         filter_ = options["--filter"]
-        tag = options["<tags>"]
+        tag = options["<tag>"]
         author = options["--author"]
         category = options["--category"]
         title = options["--title"]

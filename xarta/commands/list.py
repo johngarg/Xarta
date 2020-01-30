@@ -13,11 +13,16 @@ class List(Base):
 
     def run(self):
         options = self.options
-        obj = options["<obj>"]
+        tags = options["tags"]
+        authors = options["authors"]
         cont = options["--contains"]
 
-        if obj not in {"tags", "authors"}:
-            raise ValueError("xarta list only lists tags and authors.")
+        if tags:
+            obj = "tags"
+        elif authors:
+            obj = "authors"
+        else:
+            raise ValueError("xarta list only lists tags or authors.")
 
         with PaperDatabase() as paper_database:
             tuple_data = paper_database.get_all_papers()

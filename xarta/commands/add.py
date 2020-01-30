@@ -11,7 +11,7 @@ class Add(Base):
     def run(self):
         options = self.options
         ref = options["<ref>"]
-        tags = options["<tags>"]
+        tags = options["<tag>"]
 
         with PaperDatabase() as paper_database:
             paper_database.add_paper(paper_id=ref, tags=tags)
