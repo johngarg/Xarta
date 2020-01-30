@@ -4,15 +4,8 @@ from sys import platform
 from urllib.request import urlopen
 import os
 import re
-import sqlite3
 import xmltodict
 
-if platform.startswith("linux"):
-    OPEN_COMMAND = "xdg-open "
-elif platform.startswith("darwin"):
-    OPEN_COMMAND = "open "
-else:
-    raise XartaError("Xarta is currently not supported on Windows.")
 
 # set of arxiv categories only used for opening the "new" page of results from
 # the command line
@@ -46,6 +39,28 @@ class XartaError(Exception):
     pass
 
 
+class PaperReferenceError(XartaError):
+    """An error raised by Xarta if a given reference is not valid. The error message depends on whether or not the type of reference has been recognised"""
+
+    def __init__(self, ref, ref_type=None):
+        self.ref = ref
+        self.ref_type = ref_type
+        super().__init__()
+
+    def __str__(self):
+        if self.ref_type is not None:
+            return "Not a valid " + self.ref_type + " reference: " + self.ref
+        return "Not a recognised paper reference: " + self.ref
+
+
+if platform.startswith("linux"):
+    OPEN_COMMAND = "xdg-open "
+elif platform.startswith("darwin"):
+    OPEN_COMMAND = "open "
+else:
+    raise XartaError("Xarta is currently not supported on Windows.")
+
+
 def is_arxiv_category(s):
     """Returns true if the string s is an arxiv category."""
     return s in ARXIV_CATEGORIES
@@ -77,7 +92,7 @@ def arxiv_open(ref, pdf=False):
         else:
             os.system(OPEN_COMMAND + " https://arxiv.org/abs/" + ref)
     else:
-        raise XartaError("`xarta open` received an invalid <ref>.")
+        raise PaperReferenceError(ref=ref)
 
 
 def get_arxiv_data(ref):

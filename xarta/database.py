@@ -3,7 +3,8 @@
 import sqlite3
 import os
 from . import utils
-from .utils import XartaError
+from .utils import XartaError, PaperReferenceError
+
 
 HOME = os.path.expanduser("~")
 
@@ -95,7 +96,7 @@ class PaperDatabase:
         paper_id = utils.processed_ref(paper_id)
 
         if not utils.is_valid_ref(paper_id):
-            raise XartaError(f"Not a valid arXiv reference: {paper_id}")
+            raise PaperReferenceError(ref=paper_id)
 
         if self.contains(paper_id):
             raise XartaError("This paper is already in the database.")
