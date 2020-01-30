@@ -3,6 +3,7 @@
 from collections import namedtuple
 from .base import Base
 from ..database import PaperDatabase
+from ..utils import XartaError
 
 DATA_HEADERS = ("ref", "title", "authors", "category", "tags")
 Paper = namedtuple("Paper", DATA_HEADERS)
@@ -22,7 +23,7 @@ class List(Base):
         elif authors:
             obj = "authors"
         else:
-            raise ValueError("xarta list only lists tags or authors.")
+            raise XartaError("xarta list only lists tags or authors.")
 
         with PaperDatabase() as paper_database:
             tuple_data = paper_database.get_all_papers()

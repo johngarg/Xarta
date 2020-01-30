@@ -3,6 +3,7 @@
 import sqlite3
 import os
 from . import utils
+from .utils import XartaError
 
 HOME = os.path.expanduser("~")
 
@@ -16,7 +17,7 @@ def initialise_database(database_location, config_file=HOME + "/.xarta"):
 
     # verify folder exists
     if not os.path.isdir(database_location):
-        raise Exception("Directory does not exist.")
+        raise XartaError("Directory does not exist.")
 
     # create xarta directory
     database_location += "/.xarta.d"
@@ -58,7 +59,7 @@ def read_database_path(config_file):
         with open(config_file, "r") as xarta_file:
             return xarta_file.readline()
     except:
-        raise Exception(
+        raise XartaError(
             f"Could not read database directory from '{config_file}'. Have you initialised a database?"
         )
 
@@ -94,10 +95,10 @@ class PaperDatabase:
         paper_id = utils.processed_ref(paper_id)
 
         if not utils.is_valid_ref(paper_id):
-            raise Exception(f"Not a valid arXiv reference: {paper_id}")
+            raise XartaError(f"Not a valid arXiv reference: {paper_id}")
 
         if self.contains(paper_id):
-            raise Exception("This paper is already in the database.")
+            raise XartaError("This paper is already in the database.")
 
         data = utils.get_arxiv_data(paper_id)
         authors = utils.list_to_string(data["authors"])
@@ -146,7 +147,7 @@ class PaperDatabase:
             old_tags = self.get_tags(paper_id)
             new_tags = [tag for tag in old_tags if tag not in tags]
         else:
-            raise Exception("Unkown edit action: " + action)
+            raise XartaError("Unkown edit action: " + action)
 
         new_tags = utils.list_to_string(new_tags)
         edit_tags_command = f"""UPDATE papers SET tags = "{new_tags}"

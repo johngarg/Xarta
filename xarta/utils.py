@@ -12,7 +12,7 @@ if platform.startswith("linux"):
 elif platform.startswith("darwin"):
     OPEN_COMMAND = "open "
 else:
-    raise ValueError("Xarta is currently not supported on Windows.")
+    raise XartaError("Xarta is currently not supported on Windows.")
 
 # set of arxiv categories only used for opening the "new" page of results from
 # the command line
@@ -37,6 +37,13 @@ ARXIV_CATEGORIES = {
     "eess",
     "econ",
 }
+
+
+class XartaError(Exception):
+    """Custom Exception class. Used in a try/catch statement to distinguish between
+    'expected' errors (from a raise command) and unexpected errors"""
+
+    pass
 
 
 def is_arxiv_category(s):
@@ -70,7 +77,7 @@ def arxiv_open(ref, pdf=False):
         else:
             os.system(OPEN_COMMAND + " https://arxiv.org/abs/" + ref)
     else:
-        raise ValueError("`xarta open` received an invalid <ref>.")
+        raise XartaError("`xarta open` received an invalid <ref>.")
 
 
 def get_arxiv_data(ref):

@@ -73,6 +73,8 @@ from docopt import docopt
 
 from . import __version__ as VERSION
 
+from .utils import XartaError
+
 
 def main():
     """Main CLI entrypoint."""
@@ -90,4 +92,8 @@ def main():
                 command[1] for command in xarta.commands if command[0] != "Base"
             ][0]
             command = command(options)
-            command.run()
+            try:
+                command.run()
+            except XartaError as err:
+                # Error is of type XartaError, an 'expected' error due to bad user input. Print the error.
+                print("Error: " + str(err))
