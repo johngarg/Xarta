@@ -16,8 +16,8 @@ class Alias(BaseCommand):
         alias = alias or ""
 
         with PaperDatabase() as paper_database:
-            ref = process_ref(ref)
-            if is_valid_ref(ref):
-                paper_database.set_paper_alias(paper_id=ref, alias=alias)
+            processed_ref = process_ref(ref)
+            if is_valid_ref(processed_ref):
+                paper_database.set_paper_alias(paper_id=processed_ref, alias=alias)
             else:
                 raise XartaError("Not a valid arXiv reference or alias: " + ref)

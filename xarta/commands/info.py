@@ -14,10 +14,10 @@ class Info(BaseCommand):
         ref = options["<ref>"]
 
         with PaperDatabase() as paper_database:
-            ref = process_ref(ref)
-            if is_valid_ref(ref):
+            processed_ref = process_ref(ref)
+            if is_valid_ref(processed_ref):
                 info = paper_database.query_papers(
-                    paper_id=ref,
+                    paper_id=processed_ref,
                     title=None,
                     author=None,
                     category=None,

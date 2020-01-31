@@ -24,12 +24,12 @@ class Choose(BaseCommand):
 
         with PaperDatabase() as paper_database:
 
-            if ref:
-                ref = process_ref(ref)
-            if not ref or is_valid_ref(ref):
+            processed_ref = process_ref(ref) if ref else ref
+
+            if not ref or is_valid_ref(processed_ref):
 
                 paper_data = paper_database.query_papers(
-                    paper_id=ref,
+                    paper_id=processed_ref,
                     title=title,
                     author=author,
                     category=category,

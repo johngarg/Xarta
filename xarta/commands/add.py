@@ -16,8 +16,8 @@ class Add(BaseCommand):
         alias = options["--alias"] or ""
 
         with PaperDatabase() as paper_database:
-            ref = process_ref(ref)
-            if is_valid_ref(ref):
-                paper_database.add_paper(paper_id=ref, tags=tags, alias=alias)
+            processed_ref = process_ref(ref)
+            if is_valid_ref(processed_ref):
+                paper_database.add_paper(paper_id=processed_ref, tags=tags, alias=alias)
             else:
                 raise XartaError("Not a valid arXiv reference or alias: " + ref)
