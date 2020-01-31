@@ -32,9 +32,7 @@ def initialise_database(database_location, config_file=HOME + "/.xarta"):
 
         print("Creating new database at " + database_path + "...")
 
-        init_command = """
-            CREATE TABLE papers
-            (id text UNIQUE, title text, authors text, category text, tags text, alias text DEFAULT "" );"""
+        init_command = 'CREATE TABLE papers (id text UNIQUE, title text, authors text, category text, tags text, alias text DEFAULT "" );'
 
         with sqlite3.connect(database_path) as connection:
             print("Initialising database...")
@@ -112,7 +110,7 @@ class PaperDatabase:
     def resolve_alias(self, alias):
         """Find the paper_id associated with an alias. Return False if the alias does
         not exist"""
-        self.cursor.execute(f'SELECT id FROM papers WHERE alias="{alias}"')
+        self.cursor.execute("SELECT id FROM papers WHERE alias=?", (alias,))
         results = self.cursor.fetchall()
         if not results:
             return ""
@@ -133,28 +131,23 @@ class PaperDatabase:
         # tags = [utils.expand_tag(tag, data) for tag in tags]
         tags = utils.list_to_string(tags)
         title, category = data["title"], data["category"]
-        insert_command = f"""
-            INSERT INTO papers
-            (id, title, authors, category, tags, alias)
-            VALUES
-            ("{paper_id}", "{title}", "{authors}", "{category}", "{tags}", "{alias}");"""
+        insert_command = "INSERT INTO papers (id, title, authors, category, tags, alias) VALUES (?, ?, ?, ?, ?, ?);"
 
-        self.cursor.execute(insert_command)
+        self.cursor.execute(
+            insert_command, (paper_id, title, authors, category, tags, alias)
+        )
 
         print(f"{paper_id} added to database!")
 
     def delete_paper(self, paper_id):
         """Remove paper from database."""
-        delete_command = f"""DELETE FROM papers WHERE id = "{paper_id}";"""
-        self.cursor.execute(delete_command)
+        self.cursor.execute("DELETE FROM papers WHERE id = ?;", (paper_id,))
 
         print(f"{paper_id} deleted from database!")
 
     def get_tags(self, paper_id):
         """Get list of tags for some paper"""
-        query_command = f"""SELECT tags FROM papers WHERE id={paper_id};"""
-
-        self.cursor.execute(query_command)
+        self.cursor.execute("SELECT tags FROM papers WHERE id=?;", (paper_id,))
         tags_string = self.cursor.fetchall()[0][0]
         return utils.string_to_list(tags_string)
 
@@ -162,8 +155,7 @@ class PaperDatabase:
         """Edit the alias of a paper in the database."""
 
         self.cursor.execute(
-            f"""UPDATE papers SET alias = "{alias}"
-                                WHERE id = "{paper_id}";"""
+            "UPDATE papers SET alias = ? WHERE id = ?;", (alias, paper_id),
         )
         if alias:
             print(f"{paper_id} is now aliased to: {alias}")
@@ -190,9 +182,11 @@ class PaperDatabase:
             raise XartaError("Unkown edit action: " + action)
 
         new_tags = utils.list_to_string(new_tags)
-        edit_tags_command = f"""UPDATE papers SET tags = "{new_tags}"
-                                WHERE id = "{paper_id}";"""
-        self.cursor.execute(edit_tags_command)
+        self.cursor.execute(
+            f"""UPDATE papers SET tags = ?
+                                WHERE id = ?;""",
+            (new_tags, paper_id),
+        )
 
         print(f"{paper_id} now has the following tags in the database: {new_tags}")
 
