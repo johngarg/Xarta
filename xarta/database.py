@@ -267,7 +267,7 @@ class PaperDatabase:
             print(
                 tabulate(
                     to_be_printed,
-                    headers=["Ref", "Title", "Authors", "Category", "Tags"],
+                    headers=list(DATA_HEADERS),
                     tablefmt="simple",
                     showindex=(True if select else False),
                 )
