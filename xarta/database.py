@@ -165,7 +165,10 @@ class PaperDatabase:
             f"""UPDATE papers SET alias = "{alias}"
                                 WHERE id = "{paper_id}";"""
         )
-        print(f"{paper_id} is now aliased to: {alias}")
+        if alias:
+            print(f"{paper_id} is now aliased to: {alias}")
+        else:
+            print(f"Removed alias from {paper_id}")
 
     def edit_paper_tags(self, paper_id, tags, action):
         """Edit paper tags in database."""
