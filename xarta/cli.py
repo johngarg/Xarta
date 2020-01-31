@@ -16,6 +16,7 @@ Usage:
   xarta export <export-path> [<tag> ...]
   xarta edit <ref> [--action=<act>] [<tag> ...]
   xarta alias <ref> [<alias>]
+  xarta rename <tag> [<tag>]
   xarta -h | --help
   xarta --version
 
@@ -34,6 +35,7 @@ Command descriptions:
   export                            Exports libtrary to a bibtex bibliography.
   edit                              Set, add, or delete tags.
   alias                             Set an alias. if no <alias> argument given, clear alias.
+  rename                            Rename or delete a tag throughout the database
 With the exception of the --filter option, all search conditions are connected by logical disjunction.
 
 
@@ -52,7 +54,8 @@ Examples:
   xarta open 1704.05849
   xarta open 1704.05849 --pdf
   xarta open hep-ph
-  xarta add 1704.05849 leptoquarks neutrino-mass flavour-anomalies
+  xarta add 1704.05849 leptosquark neutrino-mass flavour-anomalies
+  xarta rename leptosquark leptoquarks
   xarta browse
   xarta browse neutrino-mass
   xarta browse --filter="'John' in authors and ('neutrino' in tags or 'leptoquarks' in tags)"

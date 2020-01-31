@@ -3,7 +3,7 @@
 import sqlite3
 import os
 from . import utils
-from .utils import XartaError
+from .utils import XartaError, string_to_list
 
 
 HOME = os.path.expanduser("~")
@@ -162,7 +162,29 @@ class PaperDatabase:
         else:
             print(f"Removed alias from {paper_id}")
 
-    def edit_paper_tags(self, paper_id, tags, action):
+    def rename_tag(self, old_tag, new_tag=None):
+        """Rename or remove a tag from every paper"""
+
+        matching_papers = self.query_papers(
+            None, None, None, None, [old_tag], None, silent=True, exact_tags=True
+        )
+        for paper in matching_papers:
+            self.edit_paper_tags(
+                paper_id=paper[0], tags=[old_tag], action="delete", silent=True
+            )
+            if new_tag is not None:
+                self.edit_paper_tags(
+                    paper_id=paper[0], tags=[new_tag], action="add", silent=True
+                )
+
+        if new_tag is None:
+            print(f"All instances of the tag '{old_tag}' were removed")
+        else:
+            print(
+                f"All instances of the tag '{old_tag}' were replaced with '{new_tag}'"
+            )
+
+    def edit_paper_tags(self, paper_id, tags, action, silent=False):
         """Edit paper tags in database."""
         # first: remove duplicates in tags
         tags = list(set(tags))
@@ -188,7 +210,8 @@ class PaperDatabase:
             (new_tags, paper_id),
         )
 
-        print(f"{paper_id} now has the following tags in the database: {new_tags}")
+        if not silent:
+            print(f"{paper_id} now has the following tags in the database: {new_tags}")
 
     def get_all_papers(self):
         """Get all papers"""
@@ -224,6 +247,7 @@ class PaperDatabase:
         filter_,
         silent=False,
         select=False,
+        exact_tags=False,
     ):
         """Function to search and filter paper database. Returns a list of
         tuples and (if `silent` is False) prints a table to the screen. Search
@@ -234,13 +258,22 @@ class PaperDatabase:
                                      tags=[])
 
         will return every paper in the database from 'hep-th' as well as those
-        by 'Weinberg'.
+        by 'Weinberg'. The exact_tags option determines how tag-matching is
+        done. If exact_tags=False, then a search for quarks will return both
+        papers tagged as quarks and leptoquarks.
         """
         library_data = self.get_all_papers()
         data = []
         col_names = ["ref", "title", "authors", "category", "tags"]
         for row in library_data:
             row_dict = dict(zip(col_names, row))
+            if exact_tags:
+                # tags are currently a long, comma separated, string. using the
+                # "in" keyword searches the string. By converting it to a list of
+                # tags, the 'in' keyword will match only complete tags in the
+                # list.
+                row_dict["tags"] = string_to_list(row_dict["tags"])
+
             if paper_id is not None and paper_id in row_dict["ref"]:
                 data.append(row)
                 continue
