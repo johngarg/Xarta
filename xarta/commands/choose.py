@@ -19,6 +19,9 @@ class Choose(Base):
         category = options["--category"]
         title = options["--title"]
 
+        if tag == [] and not (ref or filter_ or author or category or title):
+            raise XartaError("You need to specify atleast some search criteria.")
+
         with PaperDatabase() as paper_database:
             paper_data = paper_database.query_papers(
                 paper_id=ref,
