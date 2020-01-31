@@ -128,6 +128,44 @@ def string_to_list(string):
     return string.split("; ")
 
 
+def check_filter_is_sanitary(filter_, keywords):
+    """Check if a filter is (mostly) safe for evaluating. If it is not, raise an
+    error explaining why."""
+    if ";" in filter_:
+        raise XartaError("Filter must not contain semicolons.")
+    if "." in filter_:
+        raise XartaError("Filter must not contain periods.")
+    if "()" in filter_:
+        raise XartaError("Filter must not contain function calls.")
+
+    # follow up tests, is it of the form we expect: '\w+' in KEYWORD this basic
+    # form can be sorrounded with brackets and connected by 'or' and 'and'
+    # statements. so if we create a regexp for this expression, delete matches,
+    # and then remove 'or' and 'and' statements we should be left with an empty
+    # string. Or it is an invalid filter
+
+    # create regexp
+    regex_base = r"""[\(\s]*['"][\w\-\. ]+['"]\s*in\s*("""
+    for keyword in keywords:
+        regex_base += keyword + "|"
+    regex_base = regex_base.strip("|") + r")[\s\)]*"
+
+    # look for instances of regex_base
+    tmp = filter_
+    while re.search(regex_base, tmp):
+        tmp = re.sub(regex_base, "", tmp)
+
+    # new remove instances of logic keywords
+    regex_logic = r"""[\s\(\)]*(and|or)+[\s\(\)]*"""
+    while re.search(regex_logic, tmp):
+        tmp = re.sub(regex_logic, "", tmp)
+
+    if tmp.strip():
+        raise XartaError("Filter does not look like an expected python logic string.")
+
+    # note that this still lets through clearly wrong strings like filter_='and'.
+
+
 # As far as I can tell, this is used to generate tags using information from the arxiv. e.g., #title would expand to the title of the paper.
 # Currently, all of the information that could be expanded like this (id,title,authors,category) is ALREADY added to the database. Generating such tags seems useless?
 # def expand_tag(tag, dic):

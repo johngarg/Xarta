@@ -3,7 +3,7 @@
 import sqlite3
 import os
 from . import utils
-from .utils import XartaError, string_to_list
+from .utils import XartaError, string_to_list, check_filter_is_sanitary
 
 
 HOME = os.path.expanduser("~")
@@ -262,9 +262,15 @@ class PaperDatabase:
         done. If exact_tags=False, then a search for quarks will return both
         papers tagged as quarks and leptoquarks.
         """
+
+        col_names = ["ref", "title", "authors", "category", "tags"]
+        if filter_ is not None:
+            # check if the provided filter is sanitary/safe.
+            # trows errors with helpfull messages if not sanitary
+            check_filter_is_sanitary(filter_, col_names)
+
         library_data = self.get_all_papers()
         data = []
-        col_names = ["ref", "title", "authors", "category", "tags"]
         for row in library_data:
             row_dict = dict(zip(col_names, row))
             if exact_tags:
@@ -294,9 +300,12 @@ class PaperDatabase:
                 continue
             elif filter_ is not None:
                 lambda_prestring = "lambda " + ", ".join(col_names) + ": "
-                if eval(lambda_prestring + filter_)(*row_dict.values()):
-                    data.append(row)
-                    continue
+                try:
+                    if eval(lambda_prestring + filter_)(*row_dict.values()):
+                        data.append(row)
+                        continue
+                except Exception as ex:
+                    raise XartaError("Error when evaluating filter.")
 
         if len(data) > 0 and not silent:
             from tabulate import tabulate
