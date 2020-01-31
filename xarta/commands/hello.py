@@ -5,7 +5,7 @@ from .base import Base
 from ..database import PaperDatabase
 
 
-class Init(Base):
+class Hello(Base):
     """ Initialise database """
 
     def run(self):
