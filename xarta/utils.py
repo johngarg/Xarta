@@ -165,3 +165,19 @@ def format_data_term(data, select=False):
         short_data.append(short_row)
 
     return short_data
+
+
+def process_and_validate_ref(ref, paper_database):
+    """Takes a reference and database, resolves aliases, and processes arxiv
+    references. Returns the processed reference or throws an error if it is not a
+    valid reference. """
+
+    # if ref is not defined (as is the case for optional arguments), just return ref
+    if not ref:
+        return ref
+
+    processed_ref = paper_database.resolve_alias(ref) or ref
+    processed_ref = process_ref(processed_ref)
+    if not is_valid_ref(processed_ref):
+        raise XartaError("Not a valid arXiv reference or alias: " + ref)
+    return processed_ref
