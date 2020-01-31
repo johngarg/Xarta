@@ -3,7 +3,7 @@
 
 from .base import BaseCommand
 from ..database import PaperDatabase
-from ..utils import process_ref, is_valid_ref, XartaError
+from ..utils import process_and_validate_ref
 
 
 class Browse(BaseCommand):
@@ -26,16 +26,12 @@ class Browse(BaseCommand):
                 paper_database.print_all_papers()
             else:
 
-                processed_ref = process_ref(ref) if ref else ref
-
-                if not ref or is_valid_ref(processed_ref):
-                    paper_database.query_papers(
-                        paper_id=processed_ref,
-                        title=title,
-                        author=author,
-                        category=category,
-                        tags=tag,
-                        filter_=filter_,
-                    )
-                else:
-                    raise XartaError("Not a valid arXiv reference or alias: " + ref)
+                processed_ref = process_and_validate_ref(ref, paper_database)
+                paper_database.query_papers(
+                    paper_id=processed_ref,
+                    title=title,
+                    author=author,
+                    category=category,
+                    tags=tag,
+                    filter_=filter_,
+                )

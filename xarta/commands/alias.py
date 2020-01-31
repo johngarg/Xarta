@@ -3,7 +3,7 @@
 
 from .base import BaseCommand
 from ..database import PaperDatabase
-from ..utils import process_ref, is_valid_ref, XartaError
+from ..utils import process_and_validate_ref
 
 
 class Alias(BaseCommand):
@@ -16,8 +16,5 @@ class Alias(BaseCommand):
         alias = alias or ""
 
         with PaperDatabase() as paper_database:
-            processed_ref = process_ref(ref)
-            if is_valid_ref(processed_ref):
-                paper_database.set_paper_alias(paper_id=processed_ref, alias=alias)
-            else:
-                raise XartaError("Not a valid arXiv reference or alias: " + ref)
+            processed_ref = process_and_validate_ref(ref, paper_database)
+            paper_database.set_paper_alias(paper_id=processed_ref, alias=alias)

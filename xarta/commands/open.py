@@ -2,7 +2,8 @@
 
 
 from .base import BaseCommand
-from ..utils import arxiv_open, process_ref, is_valid_ref, XartaError
+from ..database import PaperDatabase
+from ..utils import arxiv_open, process_and_validate_ref
 
 
 class Open(BaseCommand):
@@ -13,8 +14,6 @@ class Open(BaseCommand):
         ref = options["<ref>"]
         pdf = options["--pdf"]
 
-        processed_ref = process_ref(ref)
-        if is_valid_ref(processed_ref):
+        with PaperDatabase() as paper_database:
+            processed_ref = process_and_validate_ref(ref, paper_database)
             arxiv_open(processed_ref, pdf=pdf)
-        else:
-            raise XartaError("Not a valid arXiv reference or alias: " + ref)

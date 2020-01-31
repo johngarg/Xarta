@@ -2,7 +2,7 @@
 
 
 from .base import BaseCommand
-from ..utils import arxiv_open, process_ref, is_valid_ref, XartaError
+from ..utils import arxiv_open, process_and_validate_ref, XartaError
 from ..database import PaperDatabase
 
 
@@ -24,50 +24,46 @@ class Choose(BaseCommand):
 
         with PaperDatabase() as paper_database:
 
-            processed_ref = process_ref(ref) if ref else ref
+            processed_ref = process_and_validate_ref(ref, paper_database)
 
-            if not ref or is_valid_ref(processed_ref):
+            paper_data = paper_database.query_papers(
+                paper_id=processed_ref,
+                title=title,
+                author=author,
+                category=category,
+                tags=tag,
+                filter_=filter_,
+                select=True,
+            )
 
-                paper_data = paper_database.query_papers(
-                    paper_id=processed_ref,
-                    title=title,
-                    author=author,
-                    category=category,
-                    tags=tag,
-                    filter_=filter_,
-                    select=True,
-                )
-
-                # how many matching papers are there?
-                #
-                if not paper_data:
-                    print("No matching papers found!")
-                    return
-                if len(paper_data) == 1:
-                    print("Only one match, opening ...")
-                    choice = 0
-                else:
-                    # more than one choice, get user input
-                    try:
-                        choice = int(input("Paper to open: "))
-                    except ValueError as err:
-                        if "invalid literal for int()" in str(err):
-                            raise XartaError("Invalid input, must be integer.")
-                        else:
-                            raise err
-                    except KeyboardInterrupt:
-                        # KeyboardInterrupt causes an ugly error message when aborting
-                        # input. So just catch and exit
-                        import sys
-
-                        sys.exit(0)
-
-                    # check input
-                    if not -len(paper_data) <= choice < len(paper_data):
-                        raise XartaError("Invalid input, integer out of bounds.")
-
-                # open the paper!
-                ref_to_open = paper_data[choice][0]
-                arxiv_open(ref_to_open, pdf=pdf)
+            # how many matching papers are there?
+            #
+            if not paper_data:
+                print("No matching papers found!")
+                return
+            if len(paper_data) == 1:
+                print("Only one match, opening ...")
+                choice = 0
             else:
-                raise XartaError("Not a valid arXiv reference or alias: " + ref)
+                # more than one choice, get user input
+                try:
+                    choice = int(input("Paper to open: "))
+                except ValueError as err:
+                    if "invalid literal for int()" in str(err):
+                        raise XartaError("Invalid input, must be integer.")
+                    else:
+                        raise err
+                except KeyboardInterrupt:
+                    # KeyboardInterrupt causes an ugly error message when aborting
+                    # input. So just catch and exit
+                    import sys
+
+                    sys.exit(0)
+
+                # check input
+                if not -len(paper_data) <= choice < len(paper_data):
+                    raise XartaError("Invalid input, integer out of bounds.")
+
+            # open the paper!
+            ref_to_open = paper_data[choice][0]
+            arxiv_open(ref_to_open, pdf=pdf)
