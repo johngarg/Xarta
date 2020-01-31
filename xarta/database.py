@@ -158,6 +158,15 @@ class PaperDatabase:
         tags_string = self.cursor.fetchall()[0][0]
         return utils.string_to_list(tags_string)
 
+    def set_paper_alias(self, paper_id, alias):
+        """Edit the alias of a paper in the database."""
+
+        self.cursor.execute(
+            f"""UPDATE papers SET alias = "{alias}"
+                                WHERE id = "{paper_id}";"""
+        )
+        print(f"{paper_id} is now aliased to: {alias}")
+
     def edit_paper_tags(self, paper_id, tags, action):
         """Edit paper tags in database."""
         # first: remove duplicates in tags

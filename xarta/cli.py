@@ -15,6 +15,7 @@ Usage:
   xarta list (authors|tags|aliases) [--contains=<cont>]
   xarta export <export-path> [<tag> ...]
   xarta edit <ref> [--action=<act>] [<tag> ...]
+  xarta alias <ref> [<alias>]
   xarta -h | --help
   xarta --version
 
@@ -32,6 +33,7 @@ Command descriptions:
   list                              Lists authors, tags, or aliases. Optionally print only those containing some substring
   export                            Exports libtrary to a bibtex bibliography.
   edit                              Set, add, or delete tags.
+  alias                             Set an alias. if no <alias> argument given, clear alias.
 With the exception of the --filter option, all search conditions are connected by logical disjunction.
 
 

@@ -10,3 +10,4 @@ from .choose import *
 from .info import *
 from .edit import *
 from .list import *
+from .alias import *
