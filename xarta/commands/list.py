@@ -3,7 +3,7 @@
 from collections import namedtuple
 from .base import BaseCommand
 from ..database import PaperDatabase, DATA_HEADERS
-from ..utils import XartaError
+from ..utils import XartaError, string_to_list
 
 Paper = namedtuple("Paper", DATA_HEADERS)
 
@@ -33,7 +33,7 @@ class List(BaseCommand):
             items = set([])
             for paper in namedtuple_data:
                 string_list = getattr(paper, column)
-                list_ = [s.strip() for s in string_list.split(";")]
+                list_ = string_to_list(string_list)
                 for item in list_:
                     if item:  # dont print empty tags/aliases
                         items.add(item)
