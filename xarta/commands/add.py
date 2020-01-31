@@ -15,6 +15,10 @@ class Add(BaseCommand):
         tags = options["<tag>"]
         alias = options["--alias"] or ""
 
+        for tag in tags:
+            if ";" in tag:
+                raise XartaError("Invalid tag, tags cannot contain semicolons.")
+
         with PaperDatabase() as paper_database:
             processed_ref = process_ref(ref)
             if is_valid_ref(processed_ref):

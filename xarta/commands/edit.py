@@ -3,7 +3,7 @@
 
 from .base import BaseCommand
 from ..database import PaperDatabase
-from ..utils import process_and_validate_ref
+from ..utils import process_and_validate_ref, XartaError
 
 
 class Edit(BaseCommand):
@@ -14,6 +14,10 @@ class Edit(BaseCommand):
         ref = options["<ref>"]
         tags = options["<tag>"]
         action = options["--action"]
+
+        for tag in tags:
+            if ";" in tag:
+                raise XartaError("Invalid tag, tags cannot contain semicolons.")
 
         with PaperDatabase() as paper_database:
             processed_ref = process_and_validate_ref(ref, paper_database)
