@@ -43,7 +43,6 @@ Options:
   --pdf                             Open the pdf url, as opposed to the abstract url.
   --author=<auth>                   Author metadata of the database entry.
   --title=<ttl>                     Title metadata of the database entry.
-  --download                        Option to save file locally for offline reading.
   --local                           Option to add an already locally saved file to database.
   --filter=<fltr>                   Filter results using python logic statements. See Examples.
   --action=<act>                    Edit action, either 'set', 'add', or 'delete' tags [default: set]
@@ -68,15 +67,14 @@ Help:
   https://github.com/johngarg/Xarta
 """
 
-import sys
 
-from inspect import getmembers, isclass
+from inspect import ismodule
 
 from docopt import docopt
 
 from . import __version__ as VERSION
 
-from .utils import XartaError, is_valid_ref, process_ref
+from .utils import XartaError
 
 
 def main():
@@ -88,24 +86,16 @@ def main():
     # Here we'll try to dynamically match the command the user is trying to run
     # with a pre-defined command class we've already created.
     for (k, v) in options.items():
-        if hasattr(xarta.commands, k) and v:
-            module = getattr(xarta.commands, k)
-            xarta.commands = getmembers(module, isclass)
-            command = [
-                command[1] for command in xarta.commands if command[0] != "Base"
-            ][0]
+        if v and hasattr(xarta.commands, k) and ismodule(getattr(xarta.commands, k)):
+            # key corresponds to a module in xarta.commands.
+            # obtain the command_class associated with that module
+            command_module = getattr(xarta.commands, k)
+            command_class = getattr(command_module, k.capitalize())
+            # If the naming convention of classes is UpperCamelCase, what is the
+            # convention for variables that point TO a class?
 
-            # process and check validity of any arxiv IDs
-            for opt in ["<ref>", "--ref"]:
-                if options[opt]:
-                    options[opt] = process_ref(options[opt])
-                    if not is_valid_ref(options[opt]):
-                        print("Not a valid arXiv reference: " + options[opt])
-                        sys.exit(1)
-
-            command = command(options)
             try:
+                command = command_class(options)
                 command.run()
             except XartaError as err:
-                # Error is of type XartaError, an 'expected' error due to bad user input. Print the error.
                 print(str(err))
