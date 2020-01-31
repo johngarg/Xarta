@@ -115,7 +115,7 @@ class PaperDatabase:
         self.cursor.execute(f'SELECT id FROM papers WHERE alias="{alias}"')
         results = self.cursor.fetchall()
         if not results:
-            return False
+            return ""
         return results[0][0]
 
     def add_paper(self, paper_id, tags, alias):
