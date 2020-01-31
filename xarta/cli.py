@@ -1,5 +1,4 @@
-"""
-xarta
+"""xarta
 
 
 Usage:
@@ -9,10 +8,12 @@ Usage:
   xarta add <ref> [--alias=<alias>] [<tag> ...]
   xarta delete <ref>
   xarta info <ref>
-  xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf] [<tag> ...]
-  xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tag> ...]
-  xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [<tag> ...]
+  xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
+               [--category=<cat>] [--filter=<fltr>] [--pdf] [<tag> ...]
+  xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
+               [--category=<cat>] [--filter=<fltr>] [<tag> ...]
   xarta list (authors|tags|aliases) [--contains=<cont>]
+  xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tag> ...]
   xarta export <export-path> [<tag> ...]
   xarta edit <ref> [--action=<act>] [<tag> ...]
   xarta alias <ref> [<alias>]
@@ -21,33 +22,45 @@ Usage:
   xarta --version
 
 
-Command descriptions:
-  open                              Opens the abstract or pdf url of an arXiv ID, or an arXiv category's new submissions page. The paper does not need to be in the database.
-  init                              Initialises the xarta database in '<database-location>/.xarta.d'. The location of the database is written to '~/.xarta'.
-  add                               Add an arXiv ID, optionally with some tags.
-  delete                            Remove and arXiv ID.
-  edit                              Updates the tags of a paper.
-  info                              Displays information about a paper. Unlike 'xarta open', the paper must be in the database.
-  choose                            Choose a paper to open from a list of papers matching some criteria.
-  lucky                             Randomly choose a paper to open from a list of papers matching some criteria.
-  browse                            Prints all papers, optionally showing only those matching some criteria.
-  list                              Lists authors, tags, or aliases. Optionally print only those containing some substring
-  export                            Exports libtrary to a bibtex bibliography.
-  edit                              Set, add, or delete tags.
-  alias                             Set an alias. if no <alias> argument given, clear alias.
-  rename                            Rename or delete a tag throughout the database
-With the exception of the --filter option, all search conditions are connected by logical disjunction.
+
+Command descriptions:                                                          |
+  open         Opens the abstract or pdf url of an arXiv ID, or an arXiv
+               category's new submissions page. The paper does not need to be
+               in the database.
+  init         Initialises the xarta database in '<database-location>/.xarta.d'.
+               The location of the database is written to '~/.xarta'.
+  add          Add an arXiv ID, optionally with some tags.
+  delete       Remove and arXiv ID.
+  edit         Updates the tags of a paper.
+  info         Displays information about a paper. Unlike 'xarta open', the
+               paper must be in the database.
+  choose       Choose a paper to open from a list of papers matching some
+               criteria.
+  browse       Prints all papers, optionally showing only those matching some
+               criteria.
+  list         Lists authors, tags, or aliases. Optionally print only those
+               containing some substring
+  lucky        Randomly choose a paper to open from a list of papers matching
+               some criteria.
+  export       Exports libtrary to a bibtex bibliography.
+  edit         Set, add, or delete tags.
+  alias        Set an alias. if no <alias> argument given, clear alias. Aliases
+               can be used in place of arXiv references.
+  rename       Rename or delete a tag throughout the database
+
+With the exception of the --filter option, all search conditions are connected
+by logical disjunction.
+
 
 
 Options:
-  -h --help                         Show this screen.
-  --version                         Show version.
-  --pdf                             Open the pdf url, as opposed to the abstract url.
-  --author=<auth>                   Author metadata of the database entry.
-  --title=<ttl>                     Title metadata of the database entry.
-  --local                           Option to add an already locally saved file to database.
-  --filter=<fltr>                   Filter results using python logic statements. See Examples.
-  --action=<act>                    Edit action, either 'set', 'add', or 'delete' tags [default: set]
+  -h --help               Show this screen.
+  --version               Show version.
+  --pdf                   Open the pdf url, as opposed to the abstract url.
+  --author=<auth>         Author metadata of the database entry.
+  --title=<ttl>           Title metadata of the database entry.
+  --filter=<fltr>         Filter results using python logic. See Examples.
+  --action=<act>          'set', 'add', or 'delete' tags [default: set]
 
 
 Examples:
@@ -58,7 +71,9 @@ Examples:
   xarta rename leptosquark leptoquarks
   xarta browse
   xarta browse neutrino-mass
-  xarta browse --filter="'John' in authors and ('neutrino' in tags or 'leptoquarks' in tags)"
+  xarta browse --filter="'John' in authors or 'Reconsidering' in title"
+  xarta browse --filter='"1704" in ref and ("trino" in tags or "lepto" in tags)'
+  xarta choose --filter='"John" in authors and "hep-ph" in category'
   xarta list tags
   xarta list authors
   xarta export ~/Desktop
@@ -68,6 +83,7 @@ Examples:
 Help:
   For help using this tool, please open an issue on the Github repository:
   https://github.com/johngarg/Xarta
+
 """
 
 
@@ -78,6 +94,8 @@ from docopt import docopt
 from . import __version__ as VERSION
 
 from .utils import XartaError
+
+import sys
 
 
 def main():
@@ -102,3 +120,5 @@ def main():
                 command.run()
             except XartaError as err:
                 print(str(err))
+                # return exit with error
+                sys.exit(1)
