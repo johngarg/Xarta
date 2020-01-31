@@ -1,11 +1,10 @@
 """The init command."""
 
 
-from .base import Base
-from ..database import PaperDatabase
+from .base import BaseCommand
 
 
-class Hello(Base):
+class Hello(BaseCommand):
     """ Initialise database """
 
     def run(self):

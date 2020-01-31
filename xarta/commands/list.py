@@ -1,14 +1,14 @@
 """The list command."""
 
 from collections import namedtuple
-from .base import Base
+from .base import BaseCommand
 from ..database import PaperDatabase, DATA_HEADERS
 from ..utils import XartaError
 
 Paper = namedtuple("Paper", DATA_HEADERS)
 
 
-class List(Base):
+class List(BaseCommand):
     """ List all tags or authors in library. """
 
     def run(self):

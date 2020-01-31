@@ -1,11 +1,12 @@
 """The browse command."""
 
 
-from .base import Base
+from .base import BaseCommand
 from ..database import PaperDatabase
+from ..utils import process_ref, is_valid_ref, XartaError
 
 
-class Browse(Base):
+class Browse(BaseCommand):
     """ List papers (by metadata). """
 
     def run(self):
@@ -24,11 +25,17 @@ class Browse(Base):
                 # no search criteria, show all papers
                 paper_database.print_all_papers()
             else:
-                paper_database.query_papers(
-                    paper_id=ref,
-                    title=title,
-                    author=author,
-                    category=category,
-                    tags=tag,
-                    filter_=filter_,
-                )
+
+                if ref:
+                    ref = process_ref(ref)
+                if not ref or is_valid_ref(ref):
+                    paper_database.query_papers(
+                        paper_id=ref,
+                        title=title,
+                        author=author,
+                        category=category,
+                        tags=tag,
+                        filter_=filter_,
+                    )
+                else:
+                    raise XartaError("Not a valid arXiv reference or alias: " + ref)

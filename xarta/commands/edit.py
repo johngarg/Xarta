@@ -1,11 +1,12 @@
 """The tag editing command."""
 
 
-from .base import Base
+from .base import BaseCommand
 from ..database import PaperDatabase
+from ..utils import process_ref, is_valid_ref, XartaError
 
 
-class Edit(Base):
+class Edit(BaseCommand):
     """ Edit the tag information in the database for a paper. """
 
     def run(self):
@@ -15,4 +16,8 @@ class Edit(Base):
         action = options["--action"]
 
         with PaperDatabase() as paper_database:
-            paper_database.edit_paper_tags(paper_id=ref, tags=tags, action=action)
+            ref = process_ref(ref)
+            if is_valid_ref(ref):
+                paper_database.edit_paper_tags(paper_id=ref, tags=tags, action=action)
+            else:
+                raise XartaError("Not a valid arXiv reference or alias: " + ref)

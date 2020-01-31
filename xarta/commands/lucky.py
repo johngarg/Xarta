@@ -1,12 +1,12 @@
 """The browse command."""
 
 
-from .base import Base
+from .base import BaseCommand
 from ..utils import arxiv_open
 from ..database import PaperDatabase
 
 
-class Lucky(Base):
+class Lucky(BaseCommand):
     """ List papers (by metadata). """
 
     def run(self):

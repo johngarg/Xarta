@@ -3,12 +3,12 @@
 
 from arxivcheck.arxiv import check_arxiv_published
 
-from .base import Base
+from .base import BaseCommand
 from ..database import PaperDatabase
 from ..utils import XartaError
 
 
-class Export(Base):
+class Export(BaseCommand):
     """
     Export the database.
     Currently only exporting to a bibtex file is supported.

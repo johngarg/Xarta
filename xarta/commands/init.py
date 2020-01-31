@@ -1,13 +1,12 @@
 """The init command."""
 
 
-from .base import Base
+from .base import BaseCommand
 from ..database import initialise_database
 
 
-class Init(Base):
+class Init(BaseCommand):
     """ Initialise database """
 
     def run(self):
-        database_location = self.options["<database-location>"]
-        initialise_database(database_location)
+        initialise_database(self.options["<database-location>"])
