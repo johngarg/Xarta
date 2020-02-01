@@ -184,20 +184,31 @@ def dots_if_needed(s, max_chars):
     return s[: (max_chars - 3)] + "..."
 
 
-def format_data_term(data, select=False, reference_prefix=""):
+def format_data_term(data, headers, select=False, reference_prefix=""):
     """Returns nicely formatted data wrt terminal dimensions."""
+
     _, term_columns = os.popen("stty size", "r").read().split()
     term_columns = int(term_columns)
+    headers = [head.capitalize() for head in headers]
 
-    if term_columns <= 80:
-        # remove many
-        pass
+    if term_columns < 120:
+        # remove category column
+        i = headers.index("Category")
+        data = [row[:i] + row[i + 1 :] for row in data]
+        headers = headers[:i] + headers[i + 1 :]
+    if term_columns < 100:
+        # remove alias column
+        i = headers.index("Alias")
+        data = [row[:i] + row[i + 1 :] for row in data]
+        headers = headers[:i] + headers[i + 1 :]
 
     # max chars in column given by terminal divided by number of columns, with a small ofset ammount
-    from .database import DATA_HEADERS
+    ncols = len(headers)
+    offset = ncols * 2  # spacing between columns
+    if select:
+        # selection column is present
+        offset += 2 + max(2, len(data))
 
-    ncols = len(DATA_HEADERS)
-    offset = 10 if select else 5
     max_chars = (term_columns - offset) // ncols
 
     short_data = []
@@ -210,7 +221,7 @@ def format_data_term(data, select=False, reference_prefix=""):
         [SecretString(reference_prefix + row[0]), *row[1:]] for row in short_data
     ]
 
-    return short_data
+    return short_data, headers
 
 
 class SecretString:

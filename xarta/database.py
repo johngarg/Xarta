@@ -330,10 +330,7 @@ class PaperDatabase:
         from tabulate import tabulate
 
         # process data for printing (fit to screen)
-        formated_data = utils.format_data_term(data, select)
-
-        # capitalise headers
-        headers = [head.capitalize() for head in DATA_HEADERS]
+        formated_data, headers = utils.format_data_term(data, DATA_HEADERS, select)
 
         # print!
         print(
