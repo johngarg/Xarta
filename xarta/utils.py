@@ -179,7 +179,7 @@ def dots_if_needed(s, max_chars):
         dots_if_needed('This is a very long string.', 12)
             #=> 'This is a ve...'
     """
-    if s is None or len(s) < max_chars:
+    if s is None or len(s) <= max_chars:
         return s
     return s[: (max_chars - 3)] + "..."
 
@@ -202,18 +202,52 @@ def format_data_term(data, headers, select=False, reference_prefix=""):
         data = [row[:i] + row[i + 1 :] for row in data]
         headers = headers[:i] + headers[i + 1 :]
 
-    # max chars in column given by terminal divided by number of columns, with a small ofset ammount
+    # max chars allowed in all columns combined is given by terminal size with a
+    # small ofset ammount for spacing between columns
     ncols = len(headers)
-    offset = ncols * 2  # spacing between columns
+    available_space = term_columns
+    available_space -= ncols * 2
     if select:
-        # selection column is present
-        offset += 2 + max(2, len(data))
+        # selection column is also present
+        available_space -= 2 + max(2, len(data))
 
-    max_chars = (term_columns - offset) // ncols
+    # next intelligently assign horizontal spacing to columns. Cap each columns
+    # space to at most a fair fraction of the REMAINING space. Note that this
+    # means the order in which spacing is asigned matters. For example, if we
+    # had one "long" column with a lot of text and and 2 very short columns, if
+    # we processed the long column first it could take up at most 1/3 of the
+    # screen, but if we process it last it could take up 1-2*epsilon of the
+    # screen. Thus, process lowes priority / space needed columns first.
+    ascending_expected_size = ["Category", "Ref", "Alias", "Authors", "Tags", "Title"]
+    column_sizes = [0] * len(headers)
+    for head in ascending_expected_size:
+        if head not in headers:
+            # already removed due to size restrictions
+            continue
+
+        # what index does this column refer to?
+        index = headers.index(head)
+
+        # current 'fair fraction':
+        available_column_space = available_space // ncols
+
+        # to figure out how much space the column "wants", find longest member
+        # of column.
+        data_length = [len(row[index]) for row in data]
+        desired_space = max(data_length + [len(head) + 2])
+
+        # how much space is actually used by the column
+        column_sizes[index] = min(desired_space, available_column_space)
+
+        # restric space left
+        available_space -= column_sizes[index]
+        ncols -= 1
 
     short_data = []
     for row in data:
-        short_row = [dots_if_needed(s, max_chars) for s in row]
+        short_row = [
+            dots_if_needed(s, max_chars) for s, max_chars in zip(row, column_sizes)
+        ]
         short_data.append(short_row)
 
     # append optional reference prefixes, and convert reference to a secret string
