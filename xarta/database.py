@@ -170,11 +170,11 @@ class PaperDatabase:
         )
         for paper in matching_papers:
             self.edit_paper_tags(
-                paper_id=paper[0], tags=[old_tag], action="delete", silent=True
+                paper_id=paper[0], tags=[old_tag], action="delete", silent=True,
             )
             if new_tag is not None:
                 self.edit_paper_tags(
-                    paper_id=paper[0], tags=[new_tag], action="add", silent=True
+                    paper_id=paper[0], tags=[new_tag], action="add", silent=True,
                 )
 
         if new_tag is None:
@@ -183,6 +183,12 @@ class PaperDatabase:
             print(
                 f"All instances of the tag '{old_tag}' were replaced with '{new_tag}'"
             )
+
+    def check_ref_exists(self, paper_id):
+        """Check if a given paper_id is present in the database"""
+        self.cursor.execute("SELECT 1 FROM papers WHERE id = ?;", (paper_id,))
+        if not self.cursor.fetchall():
+            raise XartaError(f"Reference does not exist in database: {paper_id}")
 
     def edit_paper_tags(self, paper_id, tags, action, silent=False):
         """Edit paper tags in database."""

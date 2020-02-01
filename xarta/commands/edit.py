@@ -21,6 +21,7 @@ class Edit(BaseCommand):
 
         with PaperDatabase() as paper_database:
             processed_ref = process_and_validate_ref(ref, paper_database)
+            paper_database.check_ref_exists(processed_ref)
             paper_database.edit_paper_tags(
                 paper_id=processed_ref, tags=tags, action=action
             )
