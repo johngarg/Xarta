@@ -6,7 +6,6 @@ import os
 import re
 import xmltodict
 
-
 # set of arxiv categories only used for opening the "new" page of results from
 # the command line
 ARXIV_CATEGORIES = {
@@ -169,17 +168,8 @@ def check_filter_is_sanitary(filter_, keywords):
     if tmp.strip():
         raise XartaError("Filter does not look like an expected python logic string.")
 
-    # note that this still lets through clearly wrong strings like filter_='and'.
-
-
-# As far as I can tell, this is used to generate tags using information from the arxiv. e.g., #title would expand to the title of the paper.
-# Currently, all of the information that could be expanded like this (id,title,authors,category) is ALREADY added to the database. Generating such tags seems useless?
-# def expand_tag(tag, dic):
-#     breakpoint()
-#     if tag[0] == "#":
-#         return dic[tag[1:]]
-
-#     return tag
+    # note that this check  still lets through clearly wrong strings like filter_='and'.
+    # this will raise an error but should never be harmfull
 
 
 def dots_if_needed(s, max_chars):
@@ -194,24 +184,41 @@ def dots_if_needed(s, max_chars):
     return s[: (max_chars - 3)] + "..."
 
 
-def format_data_term(data, select=False):
+def format_data_term(data, select=False, reference_prefix=""):
     """Returns nicely formatted data wrt terminal dimensions."""
     _, term_columns = os.popen("stty size", "r").read().split()
 
-    # max chars in column = a fifth of the terminal window - 1 or so
-    col_width = int(term_columns) // 5
-    offset = 2 if select else 1  # offset b/c col_width still leads to spillage
-    max_chars = col_width - offset
+    # max chars in column given by terminal divided by number of columns, with a small ofset ammount
+    from .database import DATA_HEADERS
+
+    ncols = len(DATA_HEADERS)
+    offset = 10 if select else 5
+    max_chars = (int(term_columns) - offset) // ncols
 
     short_data = []
     for row in data:
         short_row = [dots_if_needed(s, max_chars) for s in row]
         short_data.append(short_row)
 
-    # append "arXiv:" to references
-    short_data = [["arXiv:" + row[0], *row[1:]] for row in short_data]
+    short_data = [
+        [FuckOffTabulate(reference_prefix + row[0]), *row[1:]] for row in short_data
+    ]
 
     return short_data
+
+
+class FuckOffTabulate:
+    """Fucking tabulate insists on examining strings, seeing if they look like
+    numbers, and converting them to numbers, and then printing them as such I
+    cannot find a way to make it just fucking stop, so here is a custom string
+    class that hopefully gets it to bloody stop
+    """
+
+    def __init__(self, string):
+        self.string = string
+
+    def __str__(self):
+        return self.string
 
 
 def process_and_validate_ref(ref, paper_database):
