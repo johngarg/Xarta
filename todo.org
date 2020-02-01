@@ -1,4 +1,5 @@
 * Xarta TODOs
+** NEXT Update readme
 ** NEXT Add reading list
    - ~xarta reading-list add 1705.10244~
    - ~xarta reading-list remove 1705.10244~
@@ -19,7 +20,5 @@
      - `xarta add local www.abc.com/abc.pdf --ref=<ref> --doi=<doi>`
 ** SOMEDAY Write ~--download~ function for offline access
    S, xarta download [--all] [--tag=<tg>] [--ref=<ref>] etc.
-   Sen, add ~--download~ flag to ~xarta add~: ~xarta add 1806.34092 --download~
-   St them all in a file and name them like 1806_34092.pdf, hep_ph_123456OMEDAYOMEDAYOMEDAY
 ** SOMEDAY Add expandable tag
    - #LNV => lepton-number-violation | keep these in a config file in .xarta.d
