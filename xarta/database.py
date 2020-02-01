@@ -248,6 +248,7 @@ class PaperDatabase:
         silent=False,
         select=False,
         exact_tags=False,
+        error_on_empty=True,
     ):
         """Function to search and filter paper database. Returns a list of
         tuples and (if `silent` is False) prints a table to the screen. Search
@@ -315,7 +316,10 @@ class PaperDatabase:
                 except Exception as ex:
                     raise XartaError("Error when evaluating filter.")
 
-        if len(data) > 0 and not silent:
+        if not data:
+            raise XartaError("No matching papers found!")
+
+        if not silent:
             from tabulate import tabulate
 
             short_data = utils.format_data_term(data, select)

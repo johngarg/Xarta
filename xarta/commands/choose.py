@@ -38,9 +38,6 @@ class Choose(BaseCommand):
 
             # how many matching papers are there?
             #
-            if not paper_data:
-                print("No matching papers found!")
-                return
             if len(paper_data) == 1:
                 print("Only one match, opening ...")
                 choice = 0
