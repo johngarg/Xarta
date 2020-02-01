@@ -1,0 +1,25 @@
+* Xarta TODOs
+** NEXT Add reading list
+   - ~xarta reading-list add 1705.10244~
+   - ~xarta reading-list remove 1705.10244~
+   - ~xarta browse reading-list~
+   - Save timestamp when read, look at how many papers you have read in a plot!
+** NEXT Move from database to json (?) [in order to add git functionality]
+   - e.g. ~xarta git push~ (or just make this function export to json then push that?)
+   - Then, alter ~init~ function to take an existing json file too: ~xarta init --existing /path/to/db --json~
+** TODO Scan today's arXiv and recommend papers based on similar words
+** SOMEDAY Write function to save non-arxiv papers
+*** TODO Create a similar interface to [[https://cds.cern.ch/help/hacking/search-engine-api?ln=en][inspireHEP]] and [[https://cds.cern.ch/help/hacking/search-engine-api?ln=en][CERN document centre]].
+**** TODO `xarta add ATL-PHYS-PUB-2017-017 --cern`, but ideally `xarta add cern ATL-PHYS-PUB-2017-017`. Display as cern:ATL-PHYS-PUB-2017-017.
+*** TODO Function to save papers saved locally on the machine
+**** TODO Ideally, `xarta add local <path> --ref=<ref> --doi=<doi>`.
+     - If no ref supplied, random ref allocated and printed `local: 185739`.
+     - Use doi to get information about the paper from inspireHEP.
+     - Thoughts on using doi as ref if one is provided? `local:10.1103/PhysRevD.82.112004`
+     - `xarta add local www.abc.com/abc.pdf --ref=<ref> --doi=<doi>`
+** SOMEDAY Write ~--download~ function for offline access
+   S, xarta download [--all] [--tag=<tg>] [--ref=<ref>] etc.
+   Sen, add ~--download~ flag to ~xarta add~: ~xarta add 1806.34092 --download~
+   St them all in a file and name them like 1806_34092.pdf, hep_ph_123456OMEDAYOMEDAYOMEDAY
+** SOMEDAY Add expandable tag
+   - #LNV => lepton-number-violation | keep these in a config file in .xarta.d
