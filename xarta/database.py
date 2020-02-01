@@ -343,11 +343,8 @@ class PaperDatabase:
         self.cursor.execute("SELECT 1 FROM papers WHERE id = ?;", (ref,))
         return bool(self.cursor.fetchall())
 
-    def verify_database_contains(self, ref):
+    def assert_contains(self, ref):
         """Returns a boolean identifying if an entry with reference `ref`
         exists within the database. If not, raise an error."""
         if not self.contains(ref):
             raise XartaError(f"Reference does not exist in database: {ref}")
-
-    def check_ref_exists(self, ref):
-        return self.verify_database_contains(ref)
