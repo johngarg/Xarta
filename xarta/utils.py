@@ -130,9 +130,13 @@ def string_to_list(string):
     return string.split("; ")
 
 
-def check_filter_is_sanitary(filter_, keywords):
+def check_filter_is_sanitary(filter_, keywords_tmp):
     """Check if a filter is (mostly) safe for evaluating. If it is not, raise an
     error explaining why."""
+
+    # firstly, avoid side effects.
+    keywords = keywords_tmp.copy()
+
     if ";" in filter_:
         raise XartaError("Filter must not contain semicolons.")
     if "." in filter_:
@@ -209,10 +213,10 @@ def format_data_term(data, headers, select=False, reference_prefix=""):
     # small ofset ammount for spacing between columns
     ncols = len(headers)
     available_space = term_columns
-    available_space -= ncols * 2
+    available_space -= (ncols - 1) * 2
     if select:
         # selection column is also present
-        available_space -= 2 + max(2, len(data))
+        available_space -= 2
 
     # next intelligently assign horizontal spacing to columns. Cap each columns
     # space to at most a fair fraction of the REMAINING space. Note that this
@@ -234,10 +238,14 @@ def format_data_term(data, headers, select=False, reference_prefix=""):
         # current 'fair fraction':
         available_column_space = available_space // ncols
 
+        # is there still space left?
+        if available_column_space < len(head):
+            raise XartaError("Error: Terminal is too small to print table.")
+
         # to figure out how much space the column "wants", find longest member
         # of column.
         data_length = [len(row[index]) for row in data]
-        desired_space = max(data_length + [len(head) + 2])
+        desired_space = max(data_length + [len(head)])
 
         # how much space is actually used by the column
         column_sizes[index] = min(desired_space, available_column_space)
@@ -258,7 +266,7 @@ def format_data_term(data, headers, select=False, reference_prefix=""):
         [SecretString(reference_prefix + row[0]), *row[1:]] for row in short_data
     ]
 
-    return short_data, headers
+    return short_data, headers, column_sizes
 
 
 class SecretString:
@@ -319,14 +327,11 @@ def print_table(data, headers, select):
     from tabulate import tabulate
 
     # process data for printing (fit to screen)
-    formated_data, formated_headers = format_data_term(data, headers, select)
-
-    # print!
-    print(
-        tabulate(
-            formated_data,
-            headers=formated_headers,
-            tablefmt="simple",
-            showindex=select,
-        )
+    formatted_data, formatted_headers, column_sizes = format_data_term(
+        data, headers, select
     )
+
+    formatted_data.insert(0, ["-" * col_size for col_size in column_sizes])
+    formatted_data.insert(0, formatted_headers)
+    # print the rest!
+    print(tabulate(formatted_data, tablefmt="plain", showindex=select,))
