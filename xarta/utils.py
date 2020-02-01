@@ -146,6 +146,10 @@ def check_filter_is_sanitary(filter_, keywords):
     # and then remove 'or' and 'and' statements we should be left with an empty
     # string. Or it is an invalid filter
 
+    # allow keywords to be capitalised, as users may write them as they appear
+    # in the table header
+    keywords += [key.capitalize() for key in keywords]
+
     # create regexp
     regex_base = r"""[\(\s]*['"][\w\-\. ]+['"](in|not|\s)*("""
     for keyword in keywords:

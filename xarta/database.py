@@ -266,7 +266,7 @@ class PaperDatabase:
         col_names = ["ref", "title", "authors", "category", "tags"]
         if filter_ is not None:
             # check if the provided filter is sanitary/safe.
-            # trows errors with helpfull messages if not sanitary
+            # throws errors with helpfull messages if not sanitary
             check_filter_is_sanitary(filter_, col_names)
 
         library_data = self.get_all_papers()
@@ -299,9 +299,17 @@ class PaperDatabase:
                         break  # Don't include same paper twice
                 continue
             elif filter_ is not None:
-                lambda_prestring = "lambda " + ", ".join(col_names) + ": "
                 try:
-                    if eval(lambda_prestring + filter_)(*row_dict.values()):
+                    # use a dict to define accesibe variables in the eval: even though
+                    # variable names should not be capitalised, users may try and write
+                    # the variables as they appear in the table header (capitalised). so
+                    # I am including capitalised variables
+                    eval_vars = {"__builtins__": {}}
+                    eval_vars.update(row_dict)
+                    for k in col_names:
+                        eval_vars[k.capitalize()] = eval_vars[k]
+                    # evaliate filter!
+                    if eval(filter_, eval_vars):
                         data.append(row)
                         continue
                 except Exception as ex:
