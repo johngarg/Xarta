@@ -6,14 +6,22 @@ from ..database import PaperDatabase
 from ..utils import process_and_validate_ref, XartaError
 
 
-class Edit(BaseCommand):
+class Tags(BaseCommand):
     """ Edit the tag information in the database for a paper. """
 
     def run(self):
         options = self.options
         ref = options["<ref>"]
         tags = options["<tag>"]
-        action = options["--action"]
+
+        if options["set"]:
+            action = "set"
+        elif options["add"]:
+            action = "add"
+        elif options["remove"]:
+            action = "remove"
+        else:
+            raise XartaError("Invalid tag editing action.")
 
         for tag in tags:
             if ";" in tag:

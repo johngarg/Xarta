@@ -163,12 +163,12 @@ class PaperDatabase:
             old_tags = self.get_tags(paper_id)
             tags = [tag for tag in tags if tag not in old_tags]
             new_tags = old_tags + tags
-        elif action == "delete":
+        elif action == "remove":
             # remove tags from old_tags
             old_tags = self.get_tags(paper_id)
             new_tags = [tag for tag in old_tags if tag not in tags]
         else:
-            raise XartaError("Unkown edit action: " + action)
+            raise XartaError("Unkown tag editing action: " + action)
 
         new_tags = utils.list_to_string(new_tags)
         self.cursor.execute(
