@@ -312,3 +312,21 @@ def read_database_path(config_path=HOME):
             return xarta_file.readline()
     except FileNotFoundError:
         return None
+
+
+def print_table(data, headers, select):
+
+    from tabulate import tabulate
+
+    # process data for printing (fit to screen)
+    formated_data, formated_headers = format_data_term(data, headers, select)
+
+    # print!
+    print(
+        tabulate(
+            formated_data,
+            headers=formated_headers,
+            tablefmt="simple",
+            showindex=select,
+        )
+    )

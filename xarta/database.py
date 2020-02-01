@@ -3,7 +3,7 @@
 import sqlite3
 import os
 from . import utils
-from .utils import XartaError, string_to_list, check_filter_is_sanitary
+from .utils import XartaError, string_to_list, check_filter_is_sanitary, print_table
 
 
 DATA_HEADERS = ["ref", "title", "authors", "category", "tags", "alias"]
@@ -189,7 +189,7 @@ class PaperDatabase:
     def print_all_papers(self, select=False):
         """Print a table of all the papers"""
         data = self.get_all_papers()
-        self.print_papers(data, select=select)
+        print_table(data, DATA_HEADERS, select)
         if select:
             return data
 
@@ -274,7 +274,7 @@ class PaperDatabase:
             raise XartaError("No matching papers found!")
 
         if not silent:
-            self.print_papers(data, select)
+            print_table(data, DATA_HEADERS, select)
 
         return data
 
@@ -290,17 +290,3 @@ class PaperDatabase:
         exists within the database. If not, raise an error."""
         if not self.contains(ref):
             raise XartaError(f"Reference does not exist in database: {ref}")
-
-    def print_papers(self, data, select):
-
-        from tabulate import tabulate
-
-        # process data for printing (fit to screen)
-        formated_data, headers = utils.format_data_term(data, DATA_HEADERS, select)
-
-        # print!
-        print(
-            tabulate(
-                formated_data, headers=headers, tablefmt="simple", showindex=select,
-            )
-        )
