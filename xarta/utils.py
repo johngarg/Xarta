@@ -187,37 +187,42 @@ def dots_if_needed(s, max_chars):
 def format_data_term(data, select=False, reference_prefix=""):
     """Returns nicely formatted data wrt terminal dimensions."""
     _, term_columns = os.popen("stty size", "r").read().split()
+    term_columns = int(term_columns)
+
+    if term_columns <= 80:
+        # remove many
+        pass
 
     # max chars in column given by terminal divided by number of columns, with a small ofset ammount
     from .database import DATA_HEADERS
 
     ncols = len(DATA_HEADERS)
     offset = 10 if select else 5
-    max_chars = (int(term_columns) - offset) // ncols
+    max_chars = (term_columns - offset) // ncols
 
     short_data = []
     for row in data:
         short_row = [dots_if_needed(s, max_chars) for s in row]
         short_data.append(short_row)
 
+    # append optional reference prefixes, and convert reference to a secret string
     short_data = [
-        [FuckOffTabulate(reference_prefix + row[0]), *row[1:]] for row in short_data
+        [SecretString(reference_prefix + row[0]), *row[1:]] for row in short_data
     ]
 
     return short_data
 
 
-class FuckOffTabulate:
-    """Fucking tabulate insists on examining strings, seeing if they look like
-    numbers, and converting them to numbers, and then printing them as such. I
-    cannot find a way to make it just fucking stop, so here is a custom string
-    class that hopefully gets it to bloody stop. In principle, could tell
-    tabulate that numbes should be left aligned, but it still performs rounding.
-    Then I could use float format specification to ensure it prints exactly as
-    many digits of precision as needed to keep the arxiv number intact. but this
-    is complicated by the existence of old-style arxiv references. So fuck this,
-    this is good enough.
+class SecretString:
+    """This is just a string. Tabulate looks for strings that look like numbers and
+    formates them as floats, and there is no way to disable this. As we do not want
+    to format our arxiv numbers, use SecretString as tabulate does not recognise it
+    as a float.
 
+    Alternatively we could have made tabulate left-align all floats and
+    specified a float formatter. However the formatter needs to be "smart" and
+    be able to differentiate between old and new arxiv mumbers. So this is much
+    easier.
     """
 
     def __init__(self, string):
