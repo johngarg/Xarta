@@ -219,24 +219,12 @@ class PaperDatabase:
         self.cursor.execute(query_command)
         return self.cursor.fetchall()
 
-    def print_all_papers(self):
+    def print_all_papers(self, select=False):
         """Print a table of all the papers"""
-        library_data = self.get_all_papers()
-
-        from tabulate import tabulate
-
-        # get current console window dimensions
-        data = utils.format_data_term(library_data)
-
-        # prepend arXiv to ref to distinguish from cern doc server papers
-        to_be_printed = []
-        for row in data:
-            new_row = row
-            new_row[0] = "arXiv:" + row[0]
-            to_be_printed.append(new_row)
-
-        headers = [head.capitalize() for head in DATA_HEADERS]
-        print(tabulate(to_be_printed, headers=headers, tablefmt="simple"))
+        data = self.get_all_papers()
+        self.print_papers(data, select=select)
+        if select:
+            return data
 
     def query_papers(
         self,
@@ -320,19 +308,7 @@ class PaperDatabase:
             raise XartaError("No matching papers found!")
 
         if not silent:
-            from tabulate import tabulate
-
-            short_data = utils.format_data_term(data, select)
-            to_be_printed = [["arXiv:" + row[0], *row[1:]] for row in short_data]
-            headers = [head.capitalize() for head in DATA_HEADERS]
-            print(
-                tabulate(
-                    to_be_printed,
-                    headers=headers,
-                    tablefmt="simple",
-                    showindex=(True if select else False),
-                )
-            )
+            self.print_papers(data, select)
 
         return data
 
@@ -348,3 +324,20 @@ class PaperDatabase:
         exists within the database. If not, raise an error."""
         if not self.contains(ref):
             raise XartaError(f"Reference does not exist in database: {ref}")
+
+    def print_papers(self, data, select):
+
+        from tabulate import tabulate
+
+        # process data for printing (fit to screen)
+        formated_data = utils.format_data_term(data, select)
+
+        # capitalise headers
+        headers = [head.capitalize() for head in DATA_HEADERS]
+
+        # print!
+        print(
+            tabulate(
+                formated_data, headers=headers, tablefmt="simple", showindex=select,
+            )
+        )

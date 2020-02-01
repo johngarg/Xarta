@@ -208,6 +208,9 @@ def format_data_term(data, select=False):
         short_row = [dots_if_needed(s, max_chars) for s in row]
         short_data.append(short_row)
 
+    # append "arXiv:" to references
+    short_data = [["arXiv:" + row[0], *row[1:]] for row in short_data]
+
     return short_data
 
 

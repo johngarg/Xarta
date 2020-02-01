@@ -19,22 +19,25 @@ class Choose(BaseCommand):
         category = options["--category"]
         title = options["--title"]
 
-        if tag == [] and not (ref or filter_ or author or category or title):
-            raise XartaError("You need to specify atleast some search criteria.")
+        # without criteria, chose from all papers
+        print_all = tag == [] and not (ref or filter_ or author or category or title)
 
         with PaperDatabase() as paper_database:
 
             processed_ref = process_and_validate_ref(ref, paper_database)
 
-            paper_data = paper_database.query_papers(
-                paper_id=processed_ref,
-                title=title,
-                author=author,
-                category=category,
-                tags=tag,
-                filter_=filter_,
-                select=True,
-            )
+            if print_all:
+                paper_data = paper_database.print_all_papers(select=True)
+            else:
+                paper_data = paper_database.query_papers(
+                    paper_id=processed_ref,
+                    title=title,
+                    author=author,
+                    category=category,
+                    tags=tag,
+                    filter_=filter_,
+                    select=True,
+                )
 
             # how many matching papers are there?
             #
