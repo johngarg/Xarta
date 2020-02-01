@@ -8,7 +8,7 @@ from .utils import XartaError, string_to_list, check_filter_is_sanitary
 
 HOME = os.path.expanduser("~")
 
-DATA_HEADERS = ("Ref", "Title", "Authors", "Category", "Tags", "Alias")
+DATA_HEADERS = ["ref", "title", "authors", "category", "tags", "alias"]
 
 
 def initialise_database(database_location, config_file=HOME + "/.xarta"):
@@ -184,12 +184,6 @@ class PaperDatabase:
                 f"All instances of the tag '{old_tag}' were replaced with '{new_tag}'"
             )
 
-    def check_ref_exists(self, paper_id):
-        """Check if a given paper_id is present in the database"""
-        self.cursor.execute("SELECT 1 FROM papers WHERE id = ?;", (paper_id,))
-        if not self.cursor.fetchall():
-            raise XartaError(f"Reference does not exist in database: {paper_id}")
-
     def edit_paper_tags(self, paper_id, tags, action, silent=False):
         """Edit paper tags in database."""
         # first: remove duplicates in tags
@@ -241,7 +235,8 @@ class PaperDatabase:
             new_row[0] = "arXiv:" + row[0]
             to_be_printed.append(new_row)
 
-        print(tabulate(to_be_printed, headers=list(DATA_HEADERS), tablefmt="simple"))
+        headers = [head.capitalize() for head in DATA_HEADERS]
+        print(tabulate(to_be_printed, headers=headers, tablefmt="simple"))
 
     def query_papers(
         self,
@@ -270,16 +265,15 @@ class PaperDatabase:
         papers tagged as quarks and leptoquarks.
         """
 
-        col_names = ["ref", "title", "authors", "category", "tags"]
         if filter_ is not None:
             # check if the provided filter is sanitary/safe.
             # throws errors with helpfull messages if not sanitary
-            check_filter_is_sanitary(filter_, col_names)
+            check_filter_is_sanitary(filter_, DATA_HEADERS)
 
         library_data = self.get_all_papers()
         data = []
         for row in library_data:
-            row_dict = dict(zip(col_names, row))
+            row_dict = dict(zip(DATA_HEADERS, row))
             if exact_tags:
                 # tags are currently a long, comma separated, string. using the
                 # "in" keyword searches the string. By converting it to a list of
@@ -313,13 +307,13 @@ class PaperDatabase:
                     # I am including capitalised variables
                     eval_vars = {"__builtins__": {}}
                     eval_vars.update(row_dict)
-                    for k in col_names:
+                    for k in DATA_HEADERS:
                         eval_vars[k.capitalize()] = eval_vars[k]
                     # evaliate filter!
                     if eval(filter_, eval_vars):
                         data.append(row)
                         continue
-                except Exception as ex:
+                except Exception:
                     raise XartaError("Error when evaluating filter.")
 
         if not data:
@@ -330,10 +324,11 @@ class PaperDatabase:
 
             short_data = utils.format_data_term(data, select)
             to_be_printed = [["arXiv:" + row[0], *row[1:]] for row in short_data]
+            headers = [head.capitalize() for head in DATA_HEADERS]
             print(
                 tabulate(
                     to_be_printed,
-                    headers=list(DATA_HEADERS),
+                    headers=headers,
                     tablefmt="simple",
                     showindex=(True if select else False),
                 )
@@ -345,13 +340,14 @@ class PaperDatabase:
         """Returns a boolean identifying if an entry with reference `ref`
         exists within the database.
         """
-        search_results = self.query_papers(
-            paper_id=ref,
-            title=None,
-            author=None,
-            category=None,
-            tags=[],
-            filter_=None,
-            silent=True,
-        )
-        return bool(search_results)
+        self.cursor.execute("SELECT 1 FROM papers WHERE id = ?;", (ref,))
+        return bool(self.cursor.fetchall())
+
+    def verify_database_contains(self, ref):
+        """Returns a boolean identifying if an entry with reference `ref`
+        exists within the database. If not, raise an error."""
+        if not self.contains(ref):
+            raise XartaError(f"Reference does not exist in database: {ref}")
+
+    def check_ref_exists(self, ref):
+        return self.verify_database_contains(ref)

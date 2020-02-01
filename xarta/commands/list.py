@@ -13,17 +13,14 @@ class List(BaseCommand):
 
     def run(self):
         options = self.options
-        tags = options["tags"]
-        authors = options["authors"]
-        aliases = options["aliases"]
         cont = options["--contains"]
 
-        if tags:
-            column = "Tags"
-        elif authors:
-            column = "Authors"
-        elif aliases:
-            column = "Alias"
+        if options["tags"]:
+            column = "tags"
+        elif options["authors"]:
+            column = "authors"
+        elif options["aliases"]:
+            column = "alias"
         else:
             raise XartaError("Xarta list only lists tags, authors, or aliases.")
 
