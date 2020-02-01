@@ -209,9 +209,15 @@ def format_data_term(data, select=False, reference_prefix=""):
 
 class FuckOffTabulate:
     """Fucking tabulate insists on examining strings, seeing if they look like
-    numbers, and converting them to numbers, and then printing them as such I
+    numbers, and converting them to numbers, and then printing them as such. I
     cannot find a way to make it just fucking stop, so here is a custom string
-    class that hopefully gets it to bloody stop
+    class that hopefully gets it to bloody stop. In principle, could tell
+    tabulate that numbes should be left aligned, but it still performs rounding.
+    Then I could use float format specification to ensure it prints exactly as
+    many digits of precision as needed to keep the arxiv number intact. but this
+    is complicated by the existence of old-style arxiv references. So fuck this,
+    this is good enough.
+
     """
 
     def __init__(self, string):
