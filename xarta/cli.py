@@ -12,7 +12,7 @@ Usage:
                [--category=<cat>] [--filter=<fltr>] [--pdf] [<tag> ...]
   xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
                [--category=<cat>] [--filter=<fltr>] [<tag> ...]
-  xarta list (authors|tags|aliases) [--contains=<cont>]
+  xarta list (authors|tags|aliases) [--sort=<order>] [--contains=<cont>]
   xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tag> ...]
   xarta export <export-path> [<tag> ...]
   xarta tags (set|add|remove) <ref> [<tag> ...]
@@ -38,8 +38,9 @@ Command descriptions:
                criteria.
   browse       Prints all papers, optionally showing only those matching some
                criteria.
-  list         Lists authors, tags, or aliases. Optionally print only those
-               containing some substring
+  list         Lists authors, tags, or aliases. Can be sorted by date,
+               alphabetically, or by number of papers. Optionally print only
+               results containing some substring.
   lucky        Randomly choose a paper to open from a list of papers matching
                some criteria.
   export       Exports libtrary to a bibtex bibliography.
@@ -62,6 +63,9 @@ Options:
   --title=<ttl>           Title metadata of the database entry.
   --filter=<fltr>         Filter results using python logic. See Examples.
   --config=<config-file>  Location of config file. [default: ~/.xarta]
+  --sort=<order>          Order to sort lists. Can be sorted by 'date-added',
+                          'alphabetical', or by the 'number' of papers,
+                          [default: alphabetical]
 
 
 Examples:
