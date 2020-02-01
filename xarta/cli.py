@@ -1,53 +1,106 @@
-"""
-xarta
+"""xarta
+
 
 Usage:
   xarta hello
-  xarta init <database-location>
   xarta open <ref> [--pdf]
-  xarta add <ref> [--tag=<tg>]...
+  xarta init <database-location>
+  xarta add <ref> [--alias=<alias>] [<tag> ...]
   xarta delete <ref>
-  xarta edit <ref> [--tag=<tg>]...
-  xarta browse [--all] [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>]
-  xarta lucky [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--pdf]
-  xarta choose [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf]
   xarta info <ref>
-  xarta list <obj> [--contains=<cont>]
-  xarta export <export-path> [--tag=<tg>]... [--bibtex]
+  xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
+               [--category=<cat>] [--filter=<fltr>] [--pdf] [<tag> ...]
+  xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
+               [--category=<cat>] [--filter=<fltr>] [<tag> ...]
+  xarta list (authors|tags|aliases) [--sort=<order>] [--contains=<cont>]
+  xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tag> ...]
+  xarta export <export-path> [<tag> ...]
+  xarta tags (set|add|remove) <ref> [<tag> ...]
+  xarta alias <ref> [<alias>]
+  xarta rename <tag> [<tag>]
   xarta -h | --help
   xarta --version
 
+
+
+Command descriptions:
+  open         Opens the abstract or pdf url of an arXiv ID, or an arXiv
+               category's new submissions page. The paper does not need to be
+               in the database.
+  init         Initialises the xarta database in '<database-location>/.xarta.d'.
+               The location of the database is written to '~/.xarta'.
+  add          Add an arXiv ID, optionally with some tags.
+  delete       Remove and arXiv ID.
+  tags         Updates the tags associated with a paper.
+  info         Displays information about a paper. Unlike 'xarta open', the
+               paper must be in the database.
+  choose       Choose a paper to open from a list of papers matching some
+               criteria.
+  browse       Prints all papers, optionally showing only those matching some
+               criteria.
+  list         Lists authors, tags, or aliases. Can be sorted by date,
+               alphabetically, or by number of papers. Optionally print only
+               results containing some substring.
+  lucky        Randomly choose a paper to open from a list of papers matching
+               some criteria.
+  export       Exports libtrary to a bibtex bibliography.
+  tags         Set, add, or remove tags.
+  alias        Set an alias for a paper. if no <alias> argument given, clear
+               alias. Aliases can be used in place of arXiv references.
+  rename       Rename a tag throughout the database, or delete it if no new
+               tag is provided.
+
+With the exception of the --filter option, all search conditions are connected
+by logical disjunction.
+
+
+
 Options:
-  -h --help                         Show this screen.
-  --version                         Show version.
-  --pdf                             Open the pdf.
-  --tag=<tg>                        Tag metadata of the database entry.
-  --author=<auth>                   Author metadata of the database entry.
-  --title=<ttl>                     Title metadata of the database entry.
-  --bibtex                          Option to export bibliography to bibtex file.
-  --download                        Option to save file locally for offline reading.
-  --local                           Option to add an already locally saved file to database.
+  -h --help               Show this screen.
+  --version               Show version.
+  --pdf                   Open the pdf url, as opposed to the abstract url.
+  --author=<auth>         Author metadata of the database entry.
+  --title=<ttl>           Title metadata of the database entry.
+  --filter=<fltr>         Filter results using python logic. See Examples.
+  --config=<config-file>  Location of config file. [default: ~/.xarta]
+  --sort=<order>          Order to sort lists. Can be sorted by 'date-added',
+                          'alphabetical', or by the 'number' of papers,
+                          [default: alphabetical]
+
 
 Examples:
   xarta open 1704.05849
   xarta open 1704.05849 --pdf
   xarta open hep-ph
-  xarta add 1704.05849 --tag leptoquarks --tag neutrino-mass --tag flavour-anomalies
-  xarta remove 1704.05849
-  xarta browse --tag neutrino-mass
-  xarta export ~/Desktop/ --bibtex
+  xarta add 1704.05849 leptosquark neutrino-mass flavour-anomalies
+  xarta tags add 1704.05849 self_author
+  xarta rename leptosquark leptoquarks
+  xarta browse
+  xarta browse neutrino-mass
+  xarta browse --filter="'John' in authors or 'Reconsidering' in title"
+  xarta browse --filter='"1704" in ref and ("trino" in tags or "lepto" in tags)'
+  xarta choose --filter='"John" in authors and "hep-ph" in category'
+  xarta list tags
+  xarta list authors
+  xarta export ~/Desktop
+  xarta delete 1704.05849
+
 
 Help:
   For help using this tool, please open an issue on the Github repository:
   https://github.com/johngarg/Xarta
+
 """
 
+import sys
 
-from inspect import getmembers, isclass
+from inspect import ismodule
 
 from docopt import docopt
 
 from . import __version__ as VERSION
+
+from .utils import XartaError
 
 
 def main():
@@ -56,14 +109,24 @@ def main():
 
     options = docopt(__doc__, version=VERSION)
 
-    # Here we'll try to dynamically match the command the user is trying to run
-    # with a pre-defined command class we've already created.
-    for (k, v) in options.items():
-        if hasattr(xarta.commands, k) and v:
-            module = getattr(xarta.commands, k)
-            xarta.commands = getmembers(module, isclass)
-            command = [
-                command[1] for command in xarta.commands if command[0] != "Base"
-            ][0]
-            command = command(options)
+    # some commands are also options now, e.g., 'xarta add' and 'xarta tags
+    # add'. to avoid confusion, first argument,  not options, to determine command
+    first_arg = sys.argv[1]
+
+    if hasattr(xarta.commands, first_arg) and ismodule(
+        getattr(xarta.commands, first_arg)
+    ):
+        # first_arg corresponds to a module in xarta.commands.
+        # obtain the command_class associated with that module
+        command_module = getattr(xarta.commands, first_arg)
+        command_class = getattr(command_module, first_arg.capitalize())
+        # If the naming convention of classes is UpperCamelCase, what is the
+        # convention for variables that point TO a class?
+
+        try:
+            command = command_class(options)
             command.run()
+        except XartaError as err:
+            print(str(err))
+            # return exit with error
+            sys.exit(1)

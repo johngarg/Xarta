@@ -1,27 +1,35 @@
 """The init command."""
 
 
-from .base import Base
-from ..database import PaperDatabase
+import os
+from .base import BaseCommand
+from ..database import initialise_database
+from ..utils import XartaError, write_database_path
 
-class Init(Base):
+
+class Init(BaseCommand):
     """ Initialise database """
 
     def run(self):
-        import os
+        """Initialises a database and updates the database location in the config
+        file."""
 
-        database_location = self.options['<database-location>'] + ".xarta.d/"
-        database_path = database_location + "db.sqlite3"
+        database_location = self.options["<database-location>"]
+
+        # resolve relative paths, e.g., 'xarta init ./'
+        database_location = os.path.abspath(database_location)
+
+        # verify folder exists
+        if not os.path.isdir(database_location):
+            raise XartaError("Directory does not exist.")
+
+        # create xarta directory
+        database_location = os.path.join(database_location, ".xarta.d")
         os.makedirs(database_location, exist_ok=True)
+        database_path = os.path.join(database_location, "db.sqlite3")
 
-        # TODO Write some code to allow reinit of database to different location
-        # and update of .xarta file accordingly
+        # initialise database
+        initialise_database(database_path)
 
-        if 'db.sqlite3' not in os.listdir(database_location):
-            sql_command = "sqlite3 " + database_path + ' ";"'
-            os.system(sql_command)
-            paper_database = PaperDatabase(database_path)
-            paper_database.create_connection()
-            paper_database.initialise_database()
-        else:
-            print(database_path + " already exists.")
+        # next update database location.
+        write_database_path(database_path)

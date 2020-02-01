@@ -3,8 +3,30 @@
 import sqlite3
 import os
 from . import utils
+from .utils import XartaError, string_to_list, check_filter_is_sanitary, print_table
 
-HOME = os.path.expanduser("~")
+
+DATA_HEADERS = ["ref", "title", "authors", "category", "tags", "alias"]
+
+
+def initialise_database(database_path):
+    """Initialise database with empty table. If file already exists, do nothing"""
+
+    if os.path.isfile(database_path):
+        print(database_path + " already exists.")
+        return
+
+    print("Creating new database at " + database_path + "...")
+
+    init_command = 'CREATE TABLE papers (id text UNIQUE, title text, authors text, category text, tags text, alias text DEFAULT "" );'
+
+    with sqlite3.connect(database_path) as connection:
+        print("Initialising database...")
+        connection.execute(init_command)
+        connection.commit()
+    connection.close()
+
+    print("Database initialised!")
 
 
 class PaperDatabase:
@@ -12,104 +34,166 @@ class PaperDatabase:
 
     def __init__(self, path):
         self.path = path
+        self.connection = None
+        self.cursor = None
 
-    def create_connection(self):
-        """Create a database connection to a SQLite database."""
-        print("Creating new database at " + self.path + "...")
+        if self.path is None:
+            raise XartaError("Database path not found! Have you initialised it?")
 
-        # Make sure connection works without errors
-        conn = sqlite3.connect(self.path)
-        conn.close()
+        if not os.path.isfile(self.path):
+            raise XartaError("Database does not exist in " + path)
 
-        # Database path written to .xarta file in home directory
-        with open(HOME + "/.xarta", "w") as xarta_file:
-            xarta_file.write(self.path)
+    def __enter__(self):
+        self.connection = sqlite3.connect(self.path)
+        self.cursor = self.connection.cursor()
+        self.check_database_version()
+        return self
 
-    def initialise_database(self):
-        """Initialise database with empty table."""
-        init_command = """
-            CREATE TABLE papers
-            (id text, title text, authors text, category text, tags text);"""
+    def __exit__(self, error_type, value, traceback):
+        if traceback is None:
+            self.connection.commit()
+        else:
+            self.connection.rollback()
+        self.cursor.close()
+        self.connection.close()
 
-        conn = sqlite3.connect(self.path)
-        with conn:
-            print("Initialising database...")
-            conn.execute(init_command)
+    def check_database_version(self):
+        """Check version of database. If database was created using an older version of
+        xarta, insert new rows"""
+        self.cursor.execute("PRAGMA table_info(papers)")
+        columns = self.cursor.fetchall()
+        if len(columns) == 5:
+            # v1 database. Is missing the alias column!
+            print("Updating database file.")
+            self.cursor.execute('ALTER TABLE papers ADD alias text DEFAULT "" ')
 
-        print("Database initialised!")
+    def get_all_aliases(self):
+        """get a list of all aliases."""
+        self.cursor.execute("SELECT alias FROM papers")
+        results = self.cursor.fetchall()
+        aliases = [row[0] for row in results]
+        return aliases
 
-    def add_paper(self, paper_id, tags):
+    def resolve_alias(self, alias):
+        """Find the paper_id associated with an alias. Return False if the alias does
+        not exist"""
+        self.cursor.execute("SELECT id FROM papers WHERE alias=?", (alias,))
+        results = self.cursor.fetchall()
+        if not results:
+            return ""
+        return results[0][0]
+
+    def add_paper(self, paper_id, tags, alias):
         """Add paper to database. paper_id is the arxiv number as a string. The
         tags are a list of strings.
         """
-        # clean id
-        paper_id = utils.processed_ref(paper_id)
-
-        if not utils.is_valid_ref(paper_id):
-            raise Exception(f"Not a valid arXiv reference: {paper_id}")
+        if alias and alias in self.get_all_aliases():
+            raise XartaError("Alias is not unique!")
 
         if self.contains(paper_id):
-            raise Exception("This paper is already in the database.")
+            raise XartaError("This paper is already in the database.")
 
-        conn = sqlite3.connect(self.path)
-        with conn:
-            data = utils.get_arxiv_data(paper_id)
-            authors = utils.list_to_string(data["authors"])
-            tags = [utils.expand_tag(tag, data) for tag in tags]
-            tags = utils.list_to_string(tags)
-            title, category = data["title"], data["category"]
-            insert_command = f"""
-                INSERT INTO papers
-                (id, title, authors, category, tags)
-                VALUES
-                ("{paper_id}", "{title}", "{authors}", "{category}", "{tags}");"""
+        data = utils.get_arxiv_data(paper_id)
+        authors = utils.list_to_string(data["authors"])
+        # tags = [utils.expand_tag(tag, data) for tag in tags]
+        tags = utils.list_to_string(tags)
+        title, category = data["title"], data["category"]
+        insert_command = "INSERT INTO papers (id, title, authors, category, tags, alias) VALUES (?, ?, ?, ?, ?, ?);"
 
-            conn.execute(insert_command)
+        self.cursor.execute(
+            insert_command, (paper_id, title, authors, category, tags, alias)
+        )
 
         print(f"{paper_id} added to database!")
 
     def delete_paper(self, paper_id):
         """Remove paper from database."""
-        conn = sqlite3.connect(self.path)
-        with conn:
-            delete_command = f"""DELETE FROM papers WHERE id = "{paper_id}";"""
-            conn.execute(delete_command)
+        self.cursor.execute("DELETE FROM papers WHERE id = ?;", (paper_id,))
 
         print(f"{paper_id} deleted from database!")
 
-    def edit_paper_tags(self, paper_id, new_tags):
+    def get_tags(self, paper_id):
+        """Get list of tags for some paper"""
+        self.cursor.execute("SELECT tags FROM papers WHERE id=?;", (paper_id,))
+        tags_string = self.cursor.fetchall()[0][0]
+        return utils.string_to_list(tags_string)
+
+    def set_paper_alias(self, paper_id, alias):
+        """Edit the alias of a paper in the database."""
+
+        self.cursor.execute(
+            "UPDATE papers SET alias = ? WHERE id = ?;", (alias, paper_id),
+        )
+        if alias:
+            print(f"{paper_id} is now aliased to: {alias}")
+        else:
+            print(f"Removed alias from {paper_id}")
+
+    def rename_tag(self, old_tag, new_tag=None):
+        """Rename or remove a tag from every paper"""
+
+        matching_papers = self.query_papers(
+            None, None, None, None, [old_tag], None, silent=True, exact_tags=True
+        )
+        for paper in matching_papers:
+            self.edit_paper_tags(
+                paper_id=paper[0], tags=[old_tag], action="delete", silent=True,
+            )
+            if new_tag is not None:
+                self.edit_paper_tags(
+                    paper_id=paper[0], tags=[new_tag], action="add", silent=True,
+                )
+
+        if new_tag is None:
+            print(f"All instances of the tag '{old_tag}' were removed")
+        else:
+            print(
+                f"All instances of the tag '{old_tag}' were replaced with '{new_tag}'"
+            )
+
+    def edit_paper_tags(self, paper_id, tags, action, silent=False):
         """Edit paper tags in database."""
-        conn = sqlite3.connect(self.path)
-        with conn:
-            new_tags = utils.list_to_string(new_tags)
-            edit_tags_command = f"""UPDATE papers SET tags = "{new_tags}"
-                                    WHERE id = "{paper_id}";"""
-            conn.execute(edit_tags_command)
+        # first: remove duplicates in tags
+        tags = list(set(tags))
 
-        print(f"{paper_id} now has the following tags in the database: {new_tags}")
+        if action == "set":
+            new_tags = tags
+        elif action == "add":
+            # add tags to old_tags, but dont add duplicates
+            old_tags = self.get_tags(paper_id)
+            tags = [tag for tag in tags if tag not in old_tags]
+            new_tags = old_tags + tags
+        elif action == "remove":
+            # remove tags from old_tags
+            old_tags = self.get_tags(paper_id)
+            new_tags = [tag for tag in old_tags if tag not in tags]
+        else:
+            raise XartaError("Unkown tag editing action: " + action)
 
-    def query_papers(self, silent=False):
-        """Query information about a paper in the database."""
-        all_rows = utils.get_all_rows_from_db(self.path)
+        new_tags = utils.list_to_string(new_tags)
+        self.cursor.execute(
+            f"""UPDATE papers SET tags = ?
+                                WHERE id = ?;""",
+            (new_tags, paper_id),
+        )
 
-        # get current console window dimensions
-        data = utils.format_data_term(all_rows)
         if not silent:
-            from tabulate import tabulate
+            print(f"{paper_id} now has the following tags in the database: {new_tags}")
 
-            # prepend arXiv to ref to distinguish from cern doc server papers
-            to_be_printed = []
-            for row in data:
-                new_row = row
-                new_row[0] = "arXiv:" + row[0]
-                to_be_printed.append(new_row)
+    def get_all_papers(self):
+        """Get all papers"""
+        query_command = f"""SELECT * FROM papers;"""
+        self.cursor.execute(query_command)
+        return self.cursor.fetchall()
 
-            col_names = ["Ref", "Title", "Authors", "Category", "Tags"]
-            print(tabulate(to_be_printed, headers=col_names, tablefmt="simple"))
+    def print_all_papers(self, select=False):
+        """Print a table of all the papers"""
+        data = self.get_all_papers()
+        print_table(data, DATA_HEADERS, select)
+        if select:
+            return data
 
-        return all_rows
-
-    def query_papers_contains(
+    def query_papers(
         self,
         paper_id,
         title,
@@ -119,6 +203,7 @@ class PaperDatabase:
         filter_,
         silent=False,
         select=False,
+        exact_tags=False,
     ):
         """Function to search and filter paper database. Returns a list of
         tuples and (if `silent` is False) prints a table to the screen. Search
@@ -129,14 +214,27 @@ class PaperDatabase:
                                      tags=[])
 
         will return every paper in the database from 'hep-th' as well as those
-        by 'Weinberg'.
+        by 'Weinberg'. The exact_tags option determines how tag-matching is
+        done. If exact_tags=False, then a search for quarks will return both
+        papers tagged as quarks and leptoquarks.
         """
-        library_data = self.query_papers(silent=True)
+
+        if filter_ is not None:
+            # check if the provided filter is sanitary/safe.
+            # throws errors with helpfull messages if not sanitary
+            check_filter_is_sanitary(filter_, DATA_HEADERS)
+
+        library_data = self.get_all_papers()
         data = []
-        lambda_prestring = "lambda ref, title, authors, category, tags: "
-        col_names = ["ref", "title", "authors", "category", "tags"]
         for row in library_data:
-            row_dict = dict(zip(col_names, row))
+            row_dict = dict(zip(DATA_HEADERS, row))
+            if exact_tags:
+                # tags are currently a long, comma separated, string. using the
+                # "in" keyword searches the string. By converting it to a list of
+                # tags, the 'in' keyword will match only complete tags in the
+                # list.
+                row_dict["tags"] = string_to_list(row_dict["tags"])
+
             if paper_id is not None and paper_id in row_dict["ref"]:
                 data.append(row)
                 continue
@@ -156,23 +254,27 @@ class PaperDatabase:
                         break  # Don't include same paper twice
                 continue
             elif filter_ is not None:
-                if eval(lambda_prestring + filter_)(*row_dict.values()):
-                    data.append(row)
-                    continue
+                try:
+                    # use a dict to define accesibe variables in the eval: even though
+                    # variable names should not be capitalised, users may try and write
+                    # the variables as they appear in the table header (capitalised). so
+                    # I am including capitalised variables
+                    eval_vars = {"__builtins__": {}}
+                    eval_vars.update(row_dict)
+                    for k in DATA_HEADERS:
+                        eval_vars[k.capitalize()] = eval_vars[k]
+                    # evaliate filter!
+                    if eval(filter_, eval_vars):
+                        data.append(row)
+                        continue
+                except Exception:
+                    raise XartaError("Error when evaluating filter.")
+
+        if not data:
+            raise XartaError("No matching papers found!")
 
         if not silent:
-            from tabulate import tabulate
-
-            short_data = utils.format_data_term(data, select)
-            to_be_printed = [["arXiv:" + row[0], *row[1:]] for row in short_data]
-            print(
-                tabulate(
-                    to_be_printed,
-                    headers=["Ref", "Title", "Authors", "Category", "Tags"],
-                    tablefmt="simple",
-                    showindex=(True if select else False),
-                )
-            )
+            print_table(data, DATA_HEADERS, select)
 
         return data
 
@@ -180,13 +282,11 @@ class PaperDatabase:
         """Returns a boolean identifying if an entry with reference `ref`
         exists within the database.
         """
-        search_results = self.query_papers_contains(
-            paper_id=ref,
-            title=None,
-            author=None,
-            category=None,
-            tags=[],
-            filter_=None,
-            silent=True,
-        )
-        return bool(search_results)
+        self.cursor.execute("SELECT 1 FROM papers WHERE id = ?;", (ref,))
+        return bool(self.cursor.fetchall())
+
+    def assert_contains(self, ref):
+        """Returns a boolean identifying if an entry with reference `ref`
+        exists within the database. If not, raise an error."""
+        if not self.contains(ref):
+            raise XartaError(f"Reference does not exist in database: {ref}")

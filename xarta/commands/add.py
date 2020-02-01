@@ -1,20 +1,27 @@
 """The open command."""
 
 
-from .base import Base
-from ..utils import read_xarta_file
+from .base import BaseCommand
 from ..database import PaperDatabase
+from ..utils import process_ref, is_valid_ref, XartaError
 
 
-class Add(Base):
+class Add(BaseCommand):
     """ Add an arXiv paper and its metadata to the database. """
 
     def run(self):
         options = self.options
         ref = options["<ref>"]
-        tags = options["--tag"]
+        tags = options["<tag>"]
+        alias = options["--alias"] or ""
 
-        database_path = read_xarta_file()
-        paper_database = PaperDatabase(database_path)
+        for tag in tags:
+            if ";" in tag:
+                raise XartaError("Invalid tag, tags cannot contain semicolons.")
 
-        paper_database.add_paper(paper_id=ref, tags=tags)
+        with PaperDatabase(self.database_path) as paper_database:
+            processed_ref = process_ref(ref)
+            if is_valid_ref(processed_ref):
+                paper_database.add_paper(paper_id=processed_ref, tags=tags, alias=alias)
+            else:
+                raise XartaError("Not a valid arXiv reference or alias: " + ref)
