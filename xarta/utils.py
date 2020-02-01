@@ -137,6 +137,8 @@ def check_filter_is_sanitary(filter_, keywords):
         raise XartaError("Filter must not contain periods.")
     if "()" in filter_:
         raise XartaError("Filter must not contain function calls.")
+    if "__import__" in filter_:
+        raise XartaError("Filter must not contain '__import__'.")
 
     # follow up tests, is it of the form we expect: '\w+' in KEYWORD this basic
     # form can be sorrounded with brackets and connected by 'or' and 'and'
@@ -145,7 +147,7 @@ def check_filter_is_sanitary(filter_, keywords):
     # string. Or it is an invalid filter
 
     # create regexp
-    regex_base = r"""[\(\s]*['"][\w\-\. ]+['"]\s*in\s*("""
+    regex_base = r"""[\(\s]*['"][\w\-\. ]+['"](in|not|\s)*("""
     for keyword in keywords:
         regex_base += keyword + "|"
     regex_base = regex_base.strip("|") + r")[\s\)]*"
@@ -156,7 +158,7 @@ def check_filter_is_sanitary(filter_, keywords):
         tmp = re.sub(regex_base, "", tmp)
 
     # new remove instances of logic keywords
-    regex_logic = r"""[\s\(\)]*(and|or)+[\s\(\)]*"""
+    regex_logic = r"""[\s\(\)]*(and|or|not|\s)+[\s\(\)]*"""
     while re.search(regex_logic, tmp):
         tmp = re.sub(regex_logic, "", tmp)
 
