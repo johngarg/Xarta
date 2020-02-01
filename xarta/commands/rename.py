@@ -19,5 +19,5 @@ class Rename(BaseCommand):
         if len(tags) > 2:
             raise XartaError("To many arguments.")
 
-        with PaperDatabase() as paper_database:
+        with PaperDatabase(self.database_path) as paper_database:
             paper_database.rename_tag(*tags)

@@ -23,7 +23,7 @@ class Export(BaseCommand):
         if export_path is None:
             raise XartaError("<export-path> unspecified.")
 
-        with PaperDatabase() as paper_database:
+        with PaperDatabase(self.database_path) as paper_database:
 
             if tags != []:
                 good_papers = paper_database.query_papers(

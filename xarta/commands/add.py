@@ -19,7 +19,7 @@ class Add(BaseCommand):
             if ";" in tag:
                 raise XartaError("Invalid tag, tags cannot contain semicolons.")
 
-        with PaperDatabase() as paper_database:
+        with PaperDatabase(self.database_path) as paper_database:
             processed_ref = process_ref(ref)
             if is_valid_ref(processed_ref):
                 paper_database.add_paper(paper_id=processed_ref, tags=tags, alias=alias)

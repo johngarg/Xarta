@@ -22,7 +22,7 @@ class Choose(BaseCommand):
         # without criteria, chose from all papers
         print_all = tag == [] and not (ref or filter_ or author or category or title)
 
-        with PaperDatabase() as paper_database:
+        with PaperDatabase(self.database_path) as paper_database:
 
             processed_ref = process_and_validate_ref(ref, paper_database)
 

@@ -24,7 +24,7 @@ class List(BaseCommand):
         else:
             raise XartaError("Xarta list only lists tags, authors, or aliases.")
 
-        with PaperDatabase() as paper_database:
+        with PaperDatabase(self.database_path) as paper_database:
             tuple_data = paper_database.get_all_papers()
             namedtuple_data = map(lambda x: Paper(*x), tuple_data)
             items = set([])

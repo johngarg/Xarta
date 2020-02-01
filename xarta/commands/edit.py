@@ -19,7 +19,7 @@ class Edit(BaseCommand):
             if ";" in tag:
                 raise XartaError("Invalid tag, tags cannot contain semicolons.")
 
-        with PaperDatabase() as paper_database:
+        with PaperDatabase(self.database_path) as paper_database:
             processed_ref = process_and_validate_ref(ref, paper_database)
             paper_database.assert_contains(processed_ref)
             paper_database.edit_paper_tags(

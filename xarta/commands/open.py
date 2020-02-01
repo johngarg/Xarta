@@ -14,6 +14,6 @@ class Open(BaseCommand):
         ref = options["<ref>"]
         pdf = options["--pdf"]
 
-        with PaperDatabase() as paper_database:
+        with PaperDatabase(self.database_path) as paper_database:
             processed_ref = process_and_validate_ref(ref, paper_database)
             arxiv_open(processed_ref, pdf=pdf)

@@ -60,7 +60,8 @@ Options:
   --author=<auth>         Author metadata of the database entry.
   --title=<ttl>           Title metadata of the database entry.
   --filter=<fltr>         Filter results using python logic. See Examples.
-  --action=<act>          'set', 'add', or 'delete' tags [default: set]
+  --action=<act>          'set', 'add', or 'delete' tags. [default: set]
+  --config=<config-file>  Location of config file. [default: ~/.xarta]
 
 
 Examples:
@@ -86,6 +87,7 @@ Help:
 
 """
 
+import sys
 
 from inspect import ismodule
 
@@ -94,8 +96,6 @@ from docopt import docopt
 from . import __version__ as VERSION
 
 from .utils import XartaError
-
-import sys
 
 
 def main():

@@ -6,6 +6,9 @@ import os
 import re
 import xmltodict
 
+# get the home directory
+HOME = os.path.expanduser("~")
+
 # set of arxiv categories only used for opening the "new" page of results from
 # the command line
 ARXIV_CATEGORIES = {
@@ -291,3 +294,21 @@ def process_and_validate_ref(ref, paper_database):
     if not is_valid_ref(processed_ref):
         raise XartaError("Not a valid arXiv reference or alias: " + ref)
     return processed_ref
+
+
+def write_database_path(database_path, config_path=HOME):
+    """Write database location to a file, usually in HOME  """
+    config_file = os.path.join(config_path, ".xarta")
+    with open(config_file, "w") as xarta_file:
+        xarta_file.write(database_path)
+    print(f"Database location saved to {config_file}")
+
+
+def read_database_path(config_path=HOME):
+    """Read database location from a file, usually ~/.xarta, and return path as a string."""
+    config_file = os.path.join(config_path, ".xarta")
+    try:
+        with open(config_file, "r") as xarta_file:
+            return xarta_file.readline()
+    except FileNotFoundError:
+        return None

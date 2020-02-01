@@ -13,7 +13,7 @@ class Info(BaseCommand):
         options = self.options
         ref = options["<ref>"]
 
-        with PaperDatabase() as paper_database:
+        with PaperDatabase(self.database_path) as paper_database:
             processed_ref = process_and_validate_ref(ref, paper_database)
             paper_database.assert_contains(processed_ref)
             info = paper_database.query_papers(

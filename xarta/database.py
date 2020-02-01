@@ -6,77 +6,44 @@ from . import utils
 from .utils import XartaError, string_to_list, check_filter_is_sanitary
 
 
-HOME = os.path.expanduser("~")
-
 DATA_HEADERS = ["ref", "title", "authors", "category", "tags", "alias"]
 
 
-def initialise_database(database_location, config_file=HOME + "/.xarta"):
-    """Initialise database with empty table and update file that points to database.
-    If database already exists, just update the file"""
+def initialise_database(database_path):
+    """Initialise database with empty table. If file already exists, do nothing"""
 
-    # resolve relative paths, e.g., 'xarta init ./'
-    database_location = os.path.abspath(database_location)
-
-    # verify folder exists
-    if not os.path.isdir(database_location):
-        raise XartaError("Directory does not exist.")
-
-    # create xarta directory
-    database_location += "/.xarta.d"
-    os.makedirs(database_location, exist_ok=True)
-    database_path = database_location + "/db.sqlite3"
-
-    # check if file already exists
-    if "db.sqlite3" not in os.listdir(database_location):
-
-        print("Creating new database at " + database_path + "...")
-
-        init_command = 'CREATE TABLE papers (id text UNIQUE, title text, authors text, category text, tags text, alias text DEFAULT "" );'
-
-        with sqlite3.connect(database_path) as connection:
-            print("Initialising database...")
-            connection.execute(init_command)
-        connection.close()
-
-        print("Database initialised!")
-    else:
-
+    if os.path.isfile(database_path):
         print(database_path + " already exists.")
+        return
 
-    write_database_path(database_path, config_file=config_file)
+    print("Creating new database at " + database_path + "...")
 
+    init_command = 'CREATE TABLE papers (id text UNIQUE, title text, authors text, category text, tags text, alias text DEFAULT "" );'
 
-def write_database_path(database_path, config_file):
-    """Write database location to a file, usually  ~/.xarta """
-    with open(config_file, "w") as xarta_file:
-        xarta_file.write(database_path)
-    print(f"Database location saved to {config_file}")
+    with sqlite3.connect(database_path) as connection:
+        print("Initialising database...")
+        connection.execute(init_command)
+        connection.commit()
+    connection.close()
 
-
-def read_database_path(config_file):
-    """Read database location from a file, usually ~/.xarta, and return path as a string."""
-    try:
-        with open(config_file, "r") as xarta_file:
-            return xarta_file.readline()
-    except:
-        raise XartaError(
-            f"Could not read database directory from '{config_file}'. Have you initialised a database?"
-        )
+    print("Database initialised!")
 
 
 class PaperDatabase:
     """The paper database interface."""
 
-    def __init__(self, path=None, config_file=HOME + "/.xarta"):
-        self.config_file = config_file
+    def __init__(self, path):
         self.path = path
         self.connection = None
         self.cursor = None
 
-    def __enter__(self):
         if self.path is None:
-            self.path = read_database_path(self.config_file)
+            raise XartaError("Database path not found! Have you initialised it?")
+
+        if not os.path.isfile(self.path):
+            raise XartaError("Database does not exist in " + path)
+
+    def __enter__(self):
         self.connection = sqlite3.connect(self.path)
         self.cursor = self.connection.cursor()
         self.check_database_version()
@@ -237,7 +204,6 @@ class PaperDatabase:
         silent=False,
         select=False,
         exact_tags=False,
-        error_on_empty=True,
     ):
         """Function to search and filter paper database. Returns a list of
         tuples and (if `silent` is False) prints a table to the screen. Search

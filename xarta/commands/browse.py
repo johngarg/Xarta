@@ -18,7 +18,7 @@ class Browse(BaseCommand):
         category = options["--category"]
         title = options["--title"]
 
-        with PaperDatabase() as paper_database:
+        with PaperDatabase(self.database_path) as paper_database:
             if (ref or filter_ or author or category or title) is None and (
                 tag is None or tag == []
             ):

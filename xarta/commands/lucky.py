@@ -17,7 +17,7 @@ class Lucky(BaseCommand):
         title = options["--title"]
         pdf = options["--pdf"]
 
-        with PaperDatabase() as paper_database:
+        with PaperDatabase(self.database_path) as paper_database:
             ans = paper_database.query_papers(
                 paper_id=None,
                 category=None,
