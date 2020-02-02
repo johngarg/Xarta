@@ -6,6 +6,7 @@ import os
 import re
 import xmltodict
 
+
 # get the home directory
 HOME = os.path.expanduser("~")
 
@@ -216,7 +217,7 @@ def format_data_term(data, headers, select=False, reference_prefix=""):
     available_space -= (ncols - 1) * 2
     if select:
         # selection column is also present
-        available_space -= 2
+        available_space -= 3
 
     # next intelligently assign horizontal spacing to columns. Cap each columns
     # space to at most a fair fraction of the REMAINING space. Note that this
@@ -323,15 +324,24 @@ def read_database_path(config_path=HOME):
 
 
 def print_table(data, headers, select):
-
     from tabulate import tabulate
+
+    # This does not work for some reason, as a workaround use another character
+    # in place of whitespace and replace just before printing the table
+    # tabulate.PRESERVE_WHITESPACE = True
+    whitespace_char = "~"
 
     # process data for printing (fit to screen)
     formatted_data, formatted_headers, column_sizes = format_data_term(
         data, headers, select
     )
 
-    formatted_data.insert(0, ["-" * col_size for col_size in column_sizes])
-    formatted_data.insert(0, formatted_headers)
-    # print the rest!
-    print(tabulate(formatted_data, tablefmt="plain", showindex=select,))
+    hlines = ["-" * col_size for col_size in column_sizes]
+
+    offset = 3
+    frontmatter = [formatted_headers, hlines]
+    for row in frontmatter:
+        row[0] = whitespace_char * offset + row[0]
+
+    print(tabulate(frontmatter, tablefmt="plain").replace("~", " "))
+    print(tabulate(formatted_data, tablefmt="plain", showindex=select))
