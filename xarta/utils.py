@@ -343,5 +343,5 @@ def print_table(data, headers, select):
     for row in frontmatter:
         row[0] = whitespace_char * offset + row[0]
 
-    print(tabulate(frontmatter, tablefmt="plain").replace("~", " "))
+    print(tabulate(frontmatter, tablefmt="plain").replace(whitespace_char, " "))
     print(tabulate(formatted_data, tablefmt="plain", showindex=select))
