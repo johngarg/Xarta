@@ -11,38 +11,45 @@ Suppose you want to keep the paper database in your Dropbox. Initialise it with
 ```
 xarta init ~/Dropbox/
 ```
-and add a paper to your library with tags by topic or project:
+and add a paper to your library with kebab-case tags by topic or project:
 ```
-xarta add 1704.05849 --tag neutrino-mass --tag flavour-anomalies
+xarta add 1704.05849 neutrino-mass flavour-anomalies
 ```
-Now, `xarta browse --all` lists all of the papers in your library.
-Alternatively, you can browse by specific paper attributes, taken to be
-connected by logical disjunction. For example,
+Now, `xarta browse` lists all of the papers in your library.
+Alternatively, you can browse by specific paper attributes, like
 ```
-xarta browse --tag neutrino-mass --author Weinberg
+xarta browse neutrino-mass
+xarta browse --author Weinberg
 ```
-will return all papers by Weinberg as well as those with the `neutrino-mass`
-tag. For complex queries, use the `--filter` option:
+For complex queries, use the `--filter` option:
 ```
 xarta browse --filter "'neutrino-mass' in tags and 'Weinberg' in authors"
 ```
 
-You can also export your library to a bibtex file.
+The `xarta choose` command is similar to browse but allows you to open the paper
+in your browser with a key press.
+
+You can also export your whole library to a bibtex file, or just a subset of
+papers filtered by tags.
 
 A summary of the options that are working now:
 ```
 Usage:
-  xarta init <database-location>
   xarta open <ref> [--pdf]
-  xarta add <ref> [--tag=<tg>]...
+  xarta init <database-location>
+  xarta add <ref> [--alias=<alias>] [<tag> ...]
   xarta delete <ref>
-  xarta edit <ref> [--tag=<tg>]...
-  xarta browse [--all] [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>]
-  xarta lucky [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--pdf]
-  xarta choose [--author=<auth>] [--tag=<tg>]... [--title=<ttl>] [--ref=<ref>] [--category=<cat>] [--filter=<fltr>] [--pdf]
   xarta info <ref>
-  xarta list <obj> [--contains=<cont>]
-  xarta export <export-path> [--tag=<tg>]... [--bibtex]
+  xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
+               [--category=<cat>] [--filter=<fltr>] [--pdf] [<tag> ...]
+  xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
+               [--category=<cat>] [--filter=<fltr>] [<tag> ...]
+  xarta list (authors|tags|aliases) [--sort=<order>] [--contains=<cont>]
+  xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tag> ...]
+  xarta export <export-path> [<tag> ...]
+  xarta tags (set|add|remove) <ref> [<tag> ...]
+  xarta alias <ref> [<alias>]
+  xarta rename <tag> [<tag>]
   xarta -h | --help
   xarta --version
 ```
