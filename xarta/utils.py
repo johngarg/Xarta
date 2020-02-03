@@ -217,7 +217,8 @@ def format_data_term(data, headers, select=False, reference_prefix=""):
     available_space -= (ncols - 1) * 2
     if select:
         # selection column is also present
-        available_space -= 3
+        digits_offset = len(str(len(data))) + 2
+        available_space -= digits_offset
 
     # next intelligently assign horizontal spacing to columns. Cap each columns
     # space to at most a fair fraction of the REMAINING space. Note that this
@@ -267,7 +268,7 @@ def format_data_term(data, headers, select=False, reference_prefix=""):
         [SecretString(reference_prefix + row[0]), *row[1:]] for row in short_data
     ]
 
-    return short_data, headers, column_sizes
+    return short_data, headers, column_sizes, digits_offset
 
 
 class SecretString:
@@ -332,13 +333,12 @@ def print_table(data, headers, select):
     whitespace_char = "~"
 
     # process data for printing (fit to screen)
-    formatted_data, formatted_headers, column_sizes = format_data_term(
+    formatted_data, formatted_headers, column_sizes, offset = format_data_term(
         data, headers, select
     )
 
     hlines = ["-" * col_size for col_size in column_sizes]
 
-    offset = 3
     frontmatter = [formatted_headers, hlines]
     for row in frontmatter:
         row[0] = whitespace_char * offset + row[0]

@@ -1,5 +1,6 @@
 * Xarta TODOs
 ** NEXT Update readme
+** NEXT Write some tests
 ** NEXT Add reading list
    - ~xarta reading-list add 1705.10244~
    - ~xarta reading-list remove 1705.10244~
