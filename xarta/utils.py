@@ -215,6 +215,8 @@ def format_data_term(data, headers, select=False, reference_prefix=""):
     ncols = len(headers)
     available_space = term_columns
     available_space -= (ncols - 1) * 2
+
+    digits_offset = 0
     if select:
         # selection column is also present
         digits_offset = len(str(len(data))) + 2
