@@ -137,7 +137,7 @@ class PaperDatabase:
         )
         for paper in matching_papers:
             self.edit_paper_tags(
-                paper_id=paper[0], tags=[old_tag], action="delete", silent=True,
+                paper_id=paper[0], tags=[old_tag], action="remove", silent=True,
             )
             if new_tag is not None:
                 self.edit_paper_tags(
