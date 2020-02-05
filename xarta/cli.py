@@ -28,7 +28,8 @@ Command descriptions:
                category's new submissions page. The paper does not need to be
                in the database.
   init         Initialises the xarta database in '<database-location>/.xarta.d'.
-               The location of the database is written to '~/.xarta'.
+               The location of the database is written to $XARTACONFIG, or 
+               '~/.xarta' if $XARTACONFIG is undefined.
   add          Add an arXiv ID, optionally with some tags.
   delete       Remove and arXiv ID.
   tags         Updates the tags associated with a paper.
@@ -62,7 +63,6 @@ Options:
   --author=<auth>         Author metadata of the database entry.
   --title=<ttl>           Title metadata of the database entry.
   --filter=<fltr>         Filter results using python logic. See Examples.
-  --config=<config-file>  Location of config file. [default: ~/.xarta]
   --sort=<order>          Order to sort lists. Can be sorted by 'date-added',
                           'alphabetical', or by the 'number' of papers,
                           [default: alphabetical]

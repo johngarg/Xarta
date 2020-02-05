@@ -316,9 +316,14 @@ def write_database_path(database_path, config_path=HOME):
     print(f"Database location saved to {config_file}")
 
 
-def read_database_path(config_path=HOME):
+def read_database_path():
     """Read database location from a file, usually ~/.xarta, and return path as a string."""
-    config_file = os.path.join(config_path, ".xarta")
+    try:
+        #Try get config file from enviromental variable: XARTACONFIG
+        config_file=os.environ['XARTACONFIG']
+    except:
+        #varioable not defined, use default
+        config_file = os.path.join(HOME, ".xarta")
     try:
         with open(config_file, "r") as xarta_file:
             return xarta_file.readline()
