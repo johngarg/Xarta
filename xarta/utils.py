@@ -193,7 +193,8 @@ def dots_if_needed(s, max_chars):
 
 
 def format_data_term(data, headers, select=False, reference_prefix=""):
-    """Returns nicely formatted data wrt terminal dimensions."""
+    """Take paper data, and format it for printing as a table. Data is cropped
+    according to the size of the terminal."""
 
     _, term_columns = os.popen("stty size", "r").read().split()
     term_columns = int(term_columns)
@@ -228,7 +229,7 @@ def format_data_term(data, headers, select=False, reference_prefix=""):
     # had one "long" column with a lot of text and and 2 very short columns, if
     # we processed the long column first it could take up at most 1/3 of the
     # screen, but if we process it last it could take up 1-2*epsilon of the
-    # screen. Thus, process lowes priority / space needed columns first.
+    # screen. Thus, process columns with a lower space requirement first.
     ascending_expected_size = ["Category", "Ref", "Alias", "Authors", "Tags", "Title"]
     column_sizes = [0] * len(headers)
     for head in ascending_expected_size:
@@ -329,12 +330,8 @@ def read_database_path(config_file=None):
 
 
 def print_table(data, headers, select):
+    """Given a set of papers, print them nicely in a table"""
     from tabulate import tabulate
-
-    # This does not work for some reason, as a workaround use another character
-    # in place of whitespace and replace just before printing the table
-    # tabulate.PRESERVE_WHITESPACE = True
-    whitespace_char = "~"
 
     # process data for printing (fit to screen)
     formatted_data, formatted_headers, column_sizes, offset = format_data_term(
@@ -343,9 +340,16 @@ def print_table(data, headers, select):
 
     hlines = ["-" * col_size for col_size in column_sizes]
 
-    frontmatter = [formatted_headers, hlines]
-    for row in frontmatter:
-        row[0] = whitespace_char * offset + row[0]
+    if select:
+        # no indes for the first row, dashes for the second row, then integers
+        indices = [None, "-" * len(str(len(data) - 1))] + list(range(len(data)))
+    else:
+        indices = False
 
-    print(tabulate(frontmatter, tablefmt="plain").replace(whitespace_char, " "))
-    print(tabulate(formatted_data, tablefmt="plain", showindex=select))
+    print(
+        tabulate(
+            [formatted_headers, hlines] + formatted_data,
+            tablefmt="plain",
+            showindex=indices,
+        )
+    )
