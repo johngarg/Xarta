@@ -2,6 +2,7 @@
 
 from sys import platform
 from urllib.request import urlopen
+from urllib.error import HTTPError
 import os
 import re
 import xmltodict
@@ -92,23 +93,32 @@ def arxiv_open(ref, pdf=False):
 def get_arxiv_data(ref):
     """Returns a dictionary of data about the reference `ref`."""
     url = "http://export.arxiv.org/api/query?id_list=" + ref
-    xml_data = urlopen(url).read().decode("utf-8")
+    try:
+        xml_data = urlopen(url).read().decode("utf-8")
+    except HTTPError:
+        raise XartaError("HTTP Error, invalid arxiv ref?")
+
     data = xmltodict.parse(xml_data)["feed"]["entry"]
 
-    if isinstance(data["author"], list):
-        authors = [auth["name"] for auth in data["author"]]
-    else:
-        authors = [data["author"]["name"]]
+    try:
+        if isinstance(data["author"], list):
+            authors = [auth["name"] for auth in data["author"]]
+        else:
+            authors = [data["author"]["name"]]
 
-    string_format = lambda s: s.replace("\r", "").replace("\n", "").replace("  ", " ")
-    dic = {
-        "id": data["id"],
-        "title": string_format(data["title"]),
-        "authors": authors,
-        "category": data["arxiv:primary_category"]["@term"],
-    }
+        string_format = (
+            lambda s: s.replace("\r", "").replace("\n", "").replace("  ", " ")
+        )
+        dic = {
+            "id": data["id"],
+            "title": string_format(data["title"]),
+            "authors": authors,
+            "category": data["arxiv:primary_category"]["@term"],
+        }
 
-    return dic
+        return dic
+    except KeyError:
+        raise XartaError("Error processing arXiv data, invalid ref?")
 
 
 def list_to_string(lst):
