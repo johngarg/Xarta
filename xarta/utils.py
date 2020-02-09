@@ -2,6 +2,7 @@
 
 from sys import platform
 from urllib.request import urlopen
+from urllib.error import HTTPError
 import os
 import re
 import xmltodict
@@ -57,8 +58,8 @@ def is_arxiv_category(s):
 
 def is_valid_ref(ref):
     """Returns True if s is a valid arXiv reference."""
-    is_new_arxiv_ref = bool(re.match("\d{4}\.\d+", ref))
-    is_old_arxiv_ref = bool(re.match("[\w\-\.]+\/\d+", ref))
+    is_new_arxiv_ref = bool(re.fullmatch("\d{4}\.\d+", ref))
+    is_old_arxiv_ref = bool(re.fullmatch("[\w\-\.]+\/\d+", ref))
     return is_new_arxiv_ref or is_old_arxiv_ref or is_arxiv_category(ref)
 
 
@@ -92,24 +93,32 @@ def arxiv_open(ref, pdf=False):
 def get_arxiv_data(ref):
     """Returns a dictionary of data about the reference `ref`."""
     url = "http://export.arxiv.org/api/query?id_list=" + ref
-    xml_data = urlopen(url).read().decode("utf-8")
+    try:
+        xml_data = urlopen(url).read().decode("utf-8")
+    except HTTPError:
+        raise XartaError("HTTP Error, invalid arxiv ref?")
+
     data = xmltodict.parse(xml_data)["feed"]["entry"]
 
-    if isinstance(data["author"], list):
-        authors = [auth["name"] for auth in data["author"]]
-    else:
-        authors = [data["author"]["name"]]
+    try:
+        if isinstance(data["author"], list):
+            authors = [auth["name"] for auth in data["author"]]
+        else:
+            authors = [data["author"]["name"]]
 
-    string_format = lambda s: s.replace("\r", "").replace("\n", "").replace("  ", " ")
-    dic = {
-        "id": data["id"],
-        "title": string_format(data["title"]),
-        "abstract": string_format(data["summary"]),
-        "authors": authors,
-        "category": data["arxiv:primary_category"]["@term"],
-    }
+        string_format = (
+            lambda s: s.replace("\r", "").replace("\n", "").replace("  ", " ")
+        )
+        dic = {
+            "id": data["id"],
+            "title": string_format(data["title"]),
+            "authors": authors,
+            "category": data["arxiv:primary_category"]["@term"],
+        }
 
-    return dic
+        return dic
+    except KeyError:
+        raise XartaError("Error processing arXiv data, invalid ref?")
 
 
 def list_to_string(lst):
@@ -194,7 +203,8 @@ def dots_if_needed(s, max_chars):
 
 
 def format_data_term(data, headers, select=False, reference_prefix=""):
-    """Returns nicely formatted data wrt terminal dimensions."""
+    """Take paper data, and format it for printing as a table. Data is cropped
+    according to the size of the terminal."""
 
     _, term_columns = os.popen("stty size", "r").read().split()
     term_columns = int(term_columns)
@@ -229,7 +239,7 @@ def format_data_term(data, headers, select=False, reference_prefix=""):
     # had one "long" column with a lot of text and and 2 very short columns, if
     # we processed the long column first it could take up at most 1/3 of the
     # screen, but if we process it last it could take up 1-2*epsilon of the
-    # screen. Thus, process lowes priority / space needed columns first.
+    # screen. Thus, process columns with a lower space requirement first.
     ascending_expected_size = ["Category", "Ref", "Alias", "Authors", "Tags", "Title"]
     column_sizes = [0] * len(headers)
     for head in ascending_expected_size:
@@ -309,17 +319,19 @@ def process_and_validate_ref(ref, paper_database):
     return processed_ref
 
 
-def write_database_path(database_path, config_path=HOME):
+def write_database_path(database_path, config_file=None):
     """Write database location to a file, usually in HOME  """
-    config_file = os.path.join(config_path, ".xarta")
+    if config_file is None:
+        config_file = os.environ.get("XARTACONFIG") or os.path.join(HOME, ".xarta")
     with open(config_file, "w") as xarta_file:
         xarta_file.write(database_path)
     print(f"Database location saved to {config_file}")
 
 
-def read_database_path(config_path=HOME):
-    """Read database location from a file, usually ~/.xarta, and return path as a string."""
-    config_file = os.path.join(config_path, ".xarta")
+def read_database_path(config_file=None):
+    """Read database location from a file, usually in HOME, and return database path."""
+    if config_file is None:
+        config_file = os.environ.get("XARTACONFIG") or os.path.join(HOME, ".xarta")
     try:
         with open(config_file, "r") as xarta_file:
             return xarta_file.readline()
@@ -328,12 +340,8 @@ def read_database_path(config_path=HOME):
 
 
 def print_table(data, headers, select):
+    """Given a set of papers, print them nicely in a table"""
     from tabulate import tabulate
-
-    # This does not work for some reason, as a workaround use another character
-    # in place of whitespace and replace just before printing the table
-    # tabulate.PRESERVE_WHITESPACE = True
-    whitespace_char = "~"
 
     # process data for printing (fit to screen)
     formatted_data, formatted_headers, column_sizes, offset = format_data_term(
@@ -342,9 +350,16 @@ def print_table(data, headers, select):
 
     hlines = ["-" * col_size for col_size in column_sizes]
 
-    frontmatter = [formatted_headers, hlines]
-    for row in frontmatter:
-        row[0] = whitespace_char * offset + row[0]
+    if select:
+        # no indes for the first row, dashes for the second row, then integers
+        indices = [None, "-" * len(str(len(data) - 1))] + list(range(len(data)))
+    else:
+        indices = False
 
-    print(tabulate(frontmatter, tablefmt="plain").replace(whitespace_char, " "))
-    print(tabulate(formatted_data, tablefmt="plain", showindex=select))
+    print(
+        tabulate(
+            [formatted_headers, hlines] + formatted_data,
+            tablefmt="plain",
+            showindex=indices,
+        )
+    )
