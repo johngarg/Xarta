@@ -96,6 +96,7 @@ class PaperDatabase:
         data = utils.get_arxiv_data(paper_id)
         authors = utils.list_to_string(data["authors"])
         # tags = [utils.expand_tag(tag, data) for tag in tags]
+        tags.sort(key=str.lower)
         tags = utils.list_to_string(tags)
         title, category = data["title"], data["category"]
         insert_command = "INSERT INTO papers (id, title, authors, category, tags, alias) VALUES (?, ?, ?, ?, ?, ?);"
@@ -137,7 +138,7 @@ class PaperDatabase:
         )
         for paper in matching_papers:
             self.edit_paper_tags(
-                paper_id=paper[0], tags=[old_tag], action="delete", silent=True,
+                paper_id=paper[0], tags=[old_tag], action="remove", silent=True,
             )
             if new_tag is not None:
                 self.edit_paper_tags(
@@ -170,6 +171,7 @@ class PaperDatabase:
         else:
             raise XartaError("Unkown tag editing action: " + action)
 
+        new_tags.sort(key=str.lower)
         new_tags = utils.list_to_string(new_tags)
         self.cursor.execute(
             f"""UPDATE papers SET tags = ?
