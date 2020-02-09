@@ -104,6 +104,7 @@ def get_arxiv_data(ref):
     dic = {
         "id": data["id"],
         "title": string_format(data["title"]),
+        "abstract": string_format(data["summary"]),
         "authors": authors,
         "category": data["arxiv:primary_category"]["@term"],
     }
