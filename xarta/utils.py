@@ -6,19 +6,20 @@ from urllib.error import HTTPError
 import os
 import re
 import xmltodict
+import configparser
 
 # Get shell variables (might be NoneType)
 HOME = os.environ.get("HOME")
-CONFIG = os.environ.get("XDG_CONFIG_HOME")
+CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME")
 XARTACONFIG = os.environ.get("XARTACONFIG")
 
 # find config file location
 if XARTACONFIG:
     # $XARTACONFG global variable exists. Use that.
     CONFIG_FILE = XARTACONFIG
-elif CONFIG:
+elif CONFIG_HOME:
     # Otherwise, try $XDG_CONFIG_HOME.
-    CONFIG_FILE = CONFIG + "/xarta.conf"
+    CONFIG_FILE = CONFIG_HOME + "/xarta.conf"
     # If the file does not exist here, but one exists in $HOME, use that instead
     if not os.path.isfile(CONFIG_FILE) and os.path.isfile(HOME + "/.xarta.conf"):
         CONFIG_FILE = HOME + "/.xarta.conf"
@@ -340,7 +341,7 @@ def write_database_path(database_path):
     $XDG_CONFIG_HOME, or $HOME"""
     with open(CONFIG_FILE, "w") as xarta_file:
         xarta_file.write(database_path)
-    print(f"Database location saved to {config_file}")
+    print(f"Database location saved to {CONFIG_FILE}")
 
 
 def read_database_path():
