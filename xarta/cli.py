@@ -4,7 +4,7 @@
 Usage:
   xarta hello
   xarta open <ref> [--pdf]
-  xarta init <database-location>
+  xarta init <database-file>
   xarta add <ref> [--alias=<alias>] [<tag> ...]
   xarta delete <ref>
   xarta info <ref>
@@ -27,9 +27,10 @@ Command descriptions:
   open         Opens the abstract or pdf url of an arXiv ID, or an arXiv
                category's new submissions page. The paper does not need to be
                in the database.
-  init         Initialises the xarta database in '<database-location>/.xarta.d'.
-               The location of the database is written to $XARTACONFIG, or 
-               '~/.xarta' if $XARTACONFIG is undefined.
+  init         Initialise and write the xarta database to '<database-file>'.
+               The location of the database is stored in a config file located
+               in either '$XARTACONFIG', '$XDG_HOME_CONFIG/xarta.conf', or
+               '$HOME/.xarta.conf'.
   add          Add an arXiv ID, optionally with some tags.
   delete       Remove and arXiv ID.
   tags         Updates the tags associated with a paper.

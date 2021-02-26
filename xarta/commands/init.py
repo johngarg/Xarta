@@ -14,19 +14,19 @@ class Init(BaseCommand):
         """Initialises a database and updates the database location in the config
         file."""
 
-        database_location = self.options["<database-location>"]
+        database_location = self.options["<database-file>"]
 
         # resolve relative paths, e.g., 'xarta init ./'
         database_location = os.path.abspath(database_location)
 
-        # verify folder exists
-        if not os.path.isdir(database_location):
-            raise XartaError("Directory does not exist.")
+        # verify base folder exists
+        if not os.path.isdir(os.path.dirname(database_location)):
+            raise XartaError(
+                "Directory does not exist: " + str(os.path.dirname(database_location))
+            )
 
         # create xarta directory
-        database_location = os.path.join(database_location, ".xarta.d")
-        os.makedirs(database_location, exist_ok=True)
-        database_path = os.path.join(database_location, "db.sqlite3")
+        database_path = os.path.join(database_location, "xarta.db")
 
         # initialise database
         initialise_database(database_path)
