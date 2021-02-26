@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# A simple script that triues out various xarta commands and looks for errors.
+# A simple script that tries out various xarta commands and looks for errors.
 # Note that this does not test things like formatting for commands like choose and browse.
 
 function error {
-    echo -e "\n\e[1;31m ^^ ERROR ^^\e[0m\n\n"
+    echo -e "\n\e[1;31m  ERROR \e[0m\n\n"
 }
 
 test_open=False
@@ -14,7 +14,8 @@ test_open=False
 XARTACONFIG=`readlink -f '.'`
 XARTACONFIG+="/xartaconfig"
 
-xarta init ./ || error
+xarta init || error
+xarta init xarta_test.db || error
 xarta add 1704.05849 --alias "JohnnyG" leptoquarks neutrino-mass flavour-anomalies || error
 xarta add 1911.06334 test || error
 xarta add 1812.02651 || error
