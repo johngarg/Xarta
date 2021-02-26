@@ -306,7 +306,7 @@ class SecretString:
 def process_and_validate_ref(ref, paper_database):
     """Takes a reference and database, resolves aliases, and processes arxiv
     references. Returns the processed reference or throws an error if it is not a
-    valid reference. """
+    valid reference."""
 
     # if ref is not defined (as is the case for optional arguments), just return ref
     if not ref:

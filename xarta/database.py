@@ -123,7 +123,8 @@ class PaperDatabase:
         """Edit the alias of a paper in the database."""
 
         self.cursor.execute(
-            "UPDATE papers SET alias = ? WHERE id = ?;", (alias, paper_id),
+            "UPDATE papers SET alias = ? WHERE id = ?;",
+            (alias, paper_id),
         )
         if alias:
             print(f"{paper_id} is now aliased to: {alias}")
@@ -138,11 +139,17 @@ class PaperDatabase:
         )
         for paper in matching_papers:
             self.edit_paper_tags(
-                paper_id=paper[0], tags=[old_tag], action="remove", silent=True,
+                paper_id=paper[0],
+                tags=[old_tag],
+                action="remove",
+                silent=True,
             )
             if new_tag is not None:
                 self.edit_paper_tags(
-                    paper_id=paper[0], tags=[new_tag], action="add", silent=True,
+                    paper_id=paper[0],
+                    tags=[new_tag],
+                    action="add",
+                    silent=True,
                 )
 
         if new_tag is None:
