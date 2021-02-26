@@ -29,7 +29,7 @@ class Init(BaseCommand):
 
         else:
             # resolve relative paths, e.g., 'xarta init ./'
-            database_location = os.path.abspath(database_location)
+            database_file = os.path.abspath(database_file)
             database_location = os.path.dirname(database_file)
 
         os.makedirs(database_location, exist_ok=True)

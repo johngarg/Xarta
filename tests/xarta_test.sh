@@ -11,7 +11,7 @@ test_open=False
 
 
 #dont overwrite users ~/.xarta --> use a config file in CWD
-XARTACONFIG=`readlink -f '.'`
+XARTACONFIG=$(pwd)
 XARTACONFIG+="/xartaconfig"
 
 xarta init || error
@@ -23,6 +23,13 @@ xarta alias 1812.02651 alias1 || error
 xarta alias alias1 alias2 || error
 xarta browse || error
 xarta browse neutrino-mass || error
+
+echo 'this should fail:'
+xarta browse --filter="'John' in authors and ('neutrino' in tags or 'leptoquarks' in tags)" && error
+
+#enabling filters
+sed 's:False:True:g' -i $XARTACONFIG
+
 xarta browse --filter="'John' in authors and ('neutrino' in tags or 'leptoquarks' in tags)" || error
 xarta browse --filter="'John' in authors or 'Reconsidering' in title" || error
 xarta browse --filter='"1704" in ref and ("trino" in tags or "lepto" in tags)' || error
@@ -51,7 +58,8 @@ fi
 xarta delete alias2 || error
 xarta delete 1704.05849 || error
 
-rm -rf .xarta.d
-rm -rf $XARTACONFIG
-rm -rf xarta.bib
+rm $XARTACONFIG
+rm xarta.bib
+rm ./xarta.db
+rm ./xarta_test.db
 

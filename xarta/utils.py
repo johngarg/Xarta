@@ -9,10 +9,6 @@ import xmltodict
 import configparser
 
 
-# load config from a file
-CONFIG, CONFIG_FILE = load_config()
-
-
 # set of arxiv categories only used for opening the "new" page of results from
 # the command line
 ARXIV_CATEGORIES = {
@@ -151,8 +147,8 @@ def check_filter_is_sanitary(filter_, keywords_tmp):
         # Potentially unsafe use of 'eval' is not  allowed in the
         # config file. Cannot run filters
         raise XartaError(
-            "Filters are disabled in the config file as they use potentially"
-            + 'dangerous "eval()" calls. They can be enabled by editing the'
+            "Filters are disabled in the config file as they use potentially "
+            + 'dangerous "eval()" calls. They can be enabled by editing the '
             + "config file ("
             + CONFIG_FILE
             + ")."
@@ -351,7 +347,9 @@ def write_config(config_dict):
 
 def get_database_path():
     """return database location, as obtained from config file"""
-    return config["XARTA"]["database_file"]
+    if CONFIG is None:
+        return None
+    return CONFIG["XARTA"]["database_file"]
 
 
 def print_table(data, headers, select):
@@ -359,7 +357,7 @@ def print_table(data, headers, select):
     from tabulate import tabulate
 
     # process data for printing (fit to screen)
-    formatted_data, formatted_headers, column_sizes, offset = term(
+    formatted_data, formatted_headers, column_sizes, offset = format_data_term(
         data, headers, select
     )
 
@@ -406,6 +404,10 @@ def load_config():
         return None, config_file
 
     config = configparser.ConfigParser()
-    with open("config_file", "r") as f:
+    with open(config_file, "r") as f:
         config.read_file(f)
     return config, config_file
+
+
+# load config from a file
+CONFIG, CONFIG_FILE = load_config()
