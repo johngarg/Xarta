@@ -4,7 +4,7 @@
 Usage:
   xarta hello
   xarta open <ref> [--pdf]
-  xarta init <database-file>
+  xarta init [<database-file>]
   xarta add <ref> [--alias=<alias>] [<tag> ...]
   xarta delete <ref>
   xarta info <ref>
@@ -24,31 +24,46 @@ Usage:
 
 
 Command descriptions:
+
   open         Opens the abstract or pdf url of an arXiv ID, or an arXiv
                category's new submissions page. The paper does not need to be
                in the database.
-  init         Initialise and write the xarta database to '<database-file>'.
-               The location of the database is stored in a config file located
-               in either '$XARTACONFIG', '$XDG_HOME_CONFIG/xarta.conf', or
-               '$HOME/.xarta.conf'.
+
+  init         Initialise and write the xarta database to '<database-file>'. The
+               database path is stored in a config file whoose path is either
+               '$XARTACONFIG', '$XDG_HOME_CONFIG/xarta.conf', or
+               '$HOME/.xarta.conf'. If no option is given, the database is
+               written to 'xarta.db' in the same folder as the config file.
+
   add          Add an arXiv ID, optionally with some tags.
+
   delete       Remove and arXiv ID.
+
   tags         Updates the tags associated with a paper.
+
   info         Displays information about a paper. Unlike 'xarta open', the
                paper must be in the database.
+
   choose       Choose a paper to open from a list of papers matching some
                criteria.
+
   browse       Prints all papers, optionally showing only those matching some
                criteria.
+
   list         Lists authors, tags, or aliases. Can be sorted by date,
                alphabetically, or by number of papers. Optionally print only
                results containing some substring.
+
   lucky        Randomly choose a paper to open from a list of papers matching
                some criteria.
+
   export       Exports libtrary to a bibtex bibliography.
+
   tags         Set, add, or remove tags.
+
   alias        Set an alias for a paper. if no <alias> argument given, clear
                alias. Aliases can be used in place of arXiv references.
+
   rename       Rename a tag throughout the database, or delete it if no new
                tag is provided.
 

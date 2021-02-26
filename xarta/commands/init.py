@@ -4,7 +4,7 @@
 import os
 from .base import BaseCommand
 from ..database import initialise_database
-from ..utils import XartaError, write_database_path
+from ..utils import XartaError, write_database_path, CONFIG_FILE
 
 
 class Init(BaseCommand):
@@ -14,22 +14,28 @@ class Init(BaseCommand):
         """Initialises a database and updates the database location in the config
         file."""
 
-        database_location = self.options["<database-file>"]
+        database_file = self.options["<database-file>"]
 
-        # resolve relative paths, e.g., 'xarta init ./'
-        database_location = os.path.abspath(database_location)
+        if database_file is None:
+            # default to writing to same directoy as CONFIG_FILE
+            database_location = os.path.dirname(CONFIG_FILE)
 
-        # verify base folder exists
-        if not os.path.isdir(os.path.dirname(database_location)):
-            raise XartaError(
-                "Directory does not exist: " + str(os.path.dirname(database_location))
-            )
+            fn = "xarta.db"
+            # if the config file starts with a '.', so will the database file.
+            if os.path.basename(CONFIG_FILE)[0] == ".":
+                fn = "." + fn
 
-        # create xarta directory
-        database_path = os.path.join(database_location, "xarta.db")
+            database_file = os.path.join(database_location, fn)
+
+        else:
+            # resolve relative paths, e.g., 'xarta init ./'
+            database_location = os.path.abspath(database_location)
+            database_location = os.path.dirname(database_file)
+
+        os.makedirs(database_location, exist_ok=True)
 
         # initialise database
-        initialise_database(database_path)
+        initialise_database(database_file)
 
         # next update database location.
-        write_database_path(database_path)
+        write_database_path(database_file)
