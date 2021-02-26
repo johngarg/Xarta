@@ -46,7 +46,9 @@ class Export(BaseCommand):
 
                 for ref in paper_refs:
 
-                    bibtex_arxiv, bibtex_inspire = paper_database.get_bibtex_data(ref)
+                    bibtex_arxiv, bibtex_inspire = paper_database.get_bibtex_data(
+                        ref, insert_alias=options["--export-alias"]
+                    )
 
                     if options["arxiv"] or bibtex_inspire == "":
                         f.write(bibtex_arxiv + "\n\n")

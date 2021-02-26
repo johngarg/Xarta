@@ -100,7 +100,15 @@ class PaperDatabase:
         self.cursor.execute("SELECT id FROM papers WHERE alias=?", (alias,))
         results = self.cursor.fetchall()
         if not results:
-            return ""
+            return False
+        return results[0][0]
+
+    def get_alias(self, paper_id):
+        """Find the alias associated with a paper. Return false if it does not have an alias."""
+        self.cursor.execute("SELECT alias FROM papers WHERE id=?", (paper_id,))
+        results = self.cursor.fetchall()
+        if not results:
+            return False
         return results[0][0]
 
     def refresh_paper(self, paper_id):
@@ -233,8 +241,12 @@ class PaperDatabase:
         if not silent:
             print(f"{paper_id} now has the following tags in the database: {new_tags}")
 
-    def get_bibtex_data(self, paper_id, force_refresh=False):
-        """Get bibtex data for a paper. If it is not in the database, try and download it."""
+    def get_bibtex_data(self, paper_id, force_refresh=False, insert_alias=False):
+        """Get bibtex data for a paper. If it is not in the database, try and download
+        it. The function can also insert an alias-field into the bibtex output
+        for biblAtex+biber citation-aliases. If insert_alias=True, exports with
+        an alias to the arxiv ID and to the paper's alias in the database (if it
+        has one)."""
 
         self.cursor.execute("SELECT bibtex_arxiv FROM papers WHERE id=?", (paper_id,))
         bibtex_arxiv = self.cursor.fetchall()[0][0]
@@ -270,6 +282,29 @@ class PaperDatabase:
                                     WHERE id = ?;""",
                 (bibtex_inspire, paper_id),
             )
+
+        if insert_alias:
+
+            # paper_id might contain a slash (hep-ph/9....)
+            paper_id_str = paper_id.replace("/", "")
+
+            alias = self.get_alias(paper_id)
+
+            # field to be added to bibtex entry after first newline
+            id_string = "    ids = {" + paper_id_str
+            if alias:
+                id_string += ", " + alias
+            id_string += "},\n"
+
+            if bibtex_arxiv != "":
+                i = bibtex_arxiv.find("\n")
+                bibtex_arxiv = bibtex_arxiv[: i + 1] + id_string + bibtex_arxiv[i + 1 :]
+
+            if bibtex_inspire != "":
+                i = bibtex_inspire.find("\n")
+                bibtex_inspire = (
+                    bibtex_inspire[: i + 1] + id_string + bibtex_inspire[i + 1 :]
+                )
 
         return (bibtex_arxiv, bibtex_inspire)
 

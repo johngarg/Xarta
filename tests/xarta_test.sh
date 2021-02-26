@@ -48,8 +48,8 @@ xarta rename something_else
 xarta hello || error
 xarta info 1704.05849 || error
 xarta info alias2 || error
-xarta export arxiv ./xarta.bib || error
-xarta export inspire ./xarta2.bib --author='Rebecca' || error
+xarta export inspire ./xarta.bib --export-alias || error
+xarta export arxiv ./xarta2.bib --author='Rebecca' || error
 if [ "$test_open" == "True" ]; then
     xarta open 1704.05849 || error
     xarta open 1704.05849 --pdf || error
@@ -60,9 +60,13 @@ fi
 xarta delete alias2 || error
 xarta delete 1704.05849 || error
 
-rm $XARTACONFIG
-rm xarta.bib
-rm xarta2.bib
-rm xarta.db
-rm xarta_test.db
+
+read -p 'delete temporary files (Y/n)?' response
+if [ "$response" != "n" ]; then
+    rm $XARTACONFIG
+    rm xarta.bib
+    rm xarta2.bib
+    rm xarta.db
+    rm xarta_test.db
+fi
 

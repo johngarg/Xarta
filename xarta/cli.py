@@ -12,7 +12,7 @@ Usage:
                [--category=<cat>] [--filter=<fltr>] [<tag> ...]
   xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
                [--category=<cat>] [--filter=<fltr>] [--pdf] [<tag> ...]
-  xarta export (arxiv|inspire) <bibtex-file>  [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
+  xarta export (arxiv|inspire) <bibtex-file> [--export-alias] [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
                [--category=<cat>] [--filter=<fltr>] [<tag> ...]
   xarta list (authors|tags|aliases) [--sort=<order>] [--contains=<cont>]
   xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tag> ...]
@@ -53,8 +53,11 @@ Command descriptions:
                criteria. Arguments mostly the same as browse.
 
   export       Exports libary to a bibtex bibliography. Bibtex information comes
-               from either arxiv (crosref) or inspire. Papers to be exported can
-               be selected using the same arguments as the browse command.
+               from either arxiv (crosref) or inspire. The --export-alias option
+               will insert an ids field containing the arxiv id and alias into
+               the bibtex entries, for use with biblatex and biber. Papers to be
+               exported can be selected using the same arguments as the browse
+               command.
 
   list         Lists authors, tags, or aliases. Can be sorted by date,
                alphabetically, or by number of papers. Optionally print only
