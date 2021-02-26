@@ -7,9 +7,25 @@ import os
 import re
 import xmltodict
 
+# Get shell variables (might be NoneType)
+HOME = os.environ.get("HOME")
+CONFIG = os.environ.get("XDG_CONFIG_HOME")
+XARTACONFIG = os.environ.get("XARTACONFIG")
 
-# get the home directory
-HOME = os.path.expanduser("~")
+# find config file location
+if XARTACONFIG:
+    # $XARTACONFG global variable exists. Use that.
+    CONFIG_FILE = XARTACONFIG
+elif CONFIG:
+    # Otherwise, try $XDG_CONFIG_HOME.
+    CONFIG_FILE = CONFIG + "/xarta.conf"
+    # If the file does not exist here, but one exists in $HOME, use that instead
+    if not os.path.isfile(CONFIG_FILE) and os.path.isfile(HOME + "/.xarta.conf"):
+        CONFIG_FILE = HOME + "/.xarta.conf"
+else:
+    # default to a hidden file in $HOME
+    CONFIG_FILE = HOME + "/.xarta.conf"
+
 
 # set of arxiv categories only used for opening the "new" page of results from
 # the command line
