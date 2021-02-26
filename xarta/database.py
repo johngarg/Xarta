@@ -119,8 +119,8 @@ class PaperDatabase:
 
         self.cursor.execute(insert_command, (title, authors, category, paper_id))
 
-        #update bibtex
-        self.get_bibtex_data(paper_id, force_refresh=True):
+        # update bibtex
+        self.get_bibtex_data(paper_id, force_refresh=True)
 
         print(f"{paper_id} information has been updated!")
 
@@ -145,6 +145,9 @@ class PaperDatabase:
         self.cursor.execute(
             insert_command, (paper_id, title, authors, category, tags, alias)
         )
+
+        # get bibtex data
+        self.get_bibtex_data(paper_id)
 
         print(f"{paper_id} added to database!")
 
