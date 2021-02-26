@@ -119,6 +119,9 @@ class PaperDatabase:
 
         self.cursor.execute(insert_command, (title, authors, category, paper_id))
 
+        #update bibtex
+        self.get_bibtex_data(paper_id, force_refresh=True):
+
         print(f"{paper_id} information has been updated!")
 
     def add_paper(self, paper_id, tags, alias):
@@ -227,13 +230,13 @@ class PaperDatabase:
         if not silent:
             print(f"{paper_id} now has the following tags in the database: {new_tags}")
 
-    def get_bibtex_data(self, paper_id):
+    def get_bibtex_data(self, paper_id, force_refresh=False):
         """Get bibtex data for a paper. If it is not in the database, try and download it."""
 
         self.cursor.execute("SELECT bibtex_arxiv FROM papers WHERE id=?", (paper_id,))
         bibtex_arxiv = self.cursor.fetchall()[0][0]
 
-        if bibtex_arxiv == "":
+        if bibtex_arxiv == "" or force_refresh:
             # get data from arxiv using the arxivcheck package
             print("Updating arxiv bibtex for", paper_id)
             bib_info = check_arxiv_published(paper_id)
@@ -247,7 +250,7 @@ class PaperDatabase:
 
         self.cursor.execute("SELECT bibtex_inspire FROM papers WHERE id=?", (paper_id,))
         bibtex_inspire = self.cursor.fetchall()[0][0]
-        if bibtex_inspire == "":
+        if bibtex_inspire == "" or force_refresh:
             print("Updating inspire bibtex for", paper_id)
             # request data from inspire
             # format should work for both old and new arxiv ids
