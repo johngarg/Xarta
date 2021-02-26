@@ -8,24 +8,9 @@ import re
 import xmltodict
 import configparser
 
-# Get shell variables (might be NoneType)
-HOME = os.environ.get("HOME")
-CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME")
-XARTACONFIG = os.environ.get("XARTACONFIG")
 
-# find config file location
-if XARTACONFIG:
-    # $XARTACONFG global variable exists. Use that.
-    CONFIG_FILE = XARTACONFIG
-elif CONFIG_HOME:
-    # Otherwise, try $XDG_CONFIG_HOME.
-    CONFIG_FILE = CONFIG_HOME + "/xarta.conf"
-    # If the file does not exist here, but one exists in $HOME, use that instead
-    if not os.path.isfile(CONFIG_FILE) and os.path.isfile(HOME + "/.xarta.conf"):
-        CONFIG_FILE = HOME + "/.xarta.conf"
-else:
-    # default to a hidden file in $HOME
-    CONFIG_FILE = HOME + "/.xarta.conf"
+# load config from a file
+CONFIG, CONFIG_FILE = load_config()
 
 
 # set of arxiv categories only used for opening the "new" page of results from
@@ -336,23 +321,26 @@ def process_and_validate_ref(ref, paper_database):
     return processed_ref
 
 
-def write_database_path(database_path):
-    """Write database location to a file, located in either $XARTACONFIG,
-    $XDG_CONFIG_HOME, or $HOME"""
-    with open(CONFIG_FILE, "w") as xarta_file:
-        xarta_file.write(database_path)
-    print(f"Database location saved to {CONFIG_FILE}")
+def write_config(config_dict):
+    """Update config file with config_dict"""
+    global CONFIG
+
+    if CONFIG is None:
+        # no existing config, just create a new one
+        CONFIG = configparser.ConfigParser()
+        CONFIG["XARTA"] = {"database_file": "", "enable_filters": "False"}
+
+    CONFIG["XARTA"].update(config_dict)
+
+    with open(CONFIG_FILE, "w") as f:
+        CONFIG.write(f)
+
+    print(f"Config file written to {CONFIG_FILE}")
 
 
-def read_database_path():
-    """Read and return database location from a file, located in either
-    $XARTACONFIG, $XDG_CONFIG_HOME, or $HOME"""
-
-    if not os.path.isfile(CONFIG_FILE):
-        return None
-
-    with open(CONFIG_FILE, "r") as xarta_file:
-        return xarta_file.readline()
+def get_database_path():
+    """return database location, as obtained from config file"""
+    return config["XARTA"]["database_file"]
 
 
 def print_table(data, headers, select):
@@ -360,7 +348,7 @@ def print_table(data, headers, select):
     from tabulate import tabulate
 
     # process data for printing (fit to screen)
-    formatted_data, formatted_headers, column_sizes, offset = format_data_term(
+    formatted_data, formatted_headers, column_sizes, offset = term(
         data, headers, select
     )
 
@@ -379,3 +367,34 @@ def print_table(data, headers, select):
             showindex=indices,
         )
     )
+
+
+def load_config():
+    # Get shell variables (might be NoneType)
+    home = os.environ.get("HOME")
+    config_home = os.environ.get("XDG_CONFIG_HOME")
+    xartaconfig = os.environ.get("XARTACONFIG")
+
+    # find config file location
+    if xartaconfig:
+        # $XARTACONFIG global variable exists. Use that.
+        config_file = xartaconfig
+    elif config_home:
+        # Otherwise, try $XDG_CONFIG_HOME.
+        config_file = os.path.join(config_home, "xarta.conf")
+        # If the file does not exist here, but one exists in $HOME, use that instead
+        if not os.path.isfile(CONFIG_FILE) and os.path.isfile(
+            os.path.join(home, ".xarta.conf")
+        ):
+            confif_file = os.path.join(home, ".xarta.conf")
+    else:
+        # default to a hidden file in $HOME
+        config_file = os.path.join(home, ".xarta.conf")
+
+    if not os.path.isfile(config_file):
+        return None, config_file
+
+    config = configparser.ConfigParser()
+    with open("config_file", "r") as f:
+        config.read_file(f)
+    return config, config_file

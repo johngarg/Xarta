@@ -4,7 +4,7 @@
 import os
 from .base import BaseCommand
 from ..database import initialise_database
-from ..utils import XartaError, write_database_path, CONFIG_FILE
+from ..utils import XartaError, write_config, CONFIG_FILE
 
 
 class Init(BaseCommand):
@@ -38,4 +38,4 @@ class Init(BaseCommand):
         initialise_database(database_file)
 
         # next update database location.
-        write_database_path(database_file)
+        write_config({"database_file": database_file})
