@@ -5,7 +5,7 @@ from arxivcheck.arxiv import check_arxiv_published
 
 from .base import BaseCommand
 from ..database import PaperDatabase
-from ..utils import XartaError
+from ..utils import XartaError, process_and_validate_ref
 
 
 class Export(BaseCommand):
@@ -17,34 +17,40 @@ class Export(BaseCommand):
 
     def run(self):
         options = self.options
-        export_path = options["<export-path>"]
-        tags = options["<tag>"]
-
-        if export_path is None:
-            raise XartaError("<export-path> unspecified.")
+        bibtex_file = options["<bibtex-file>"]
+        ref = options["--ref"]
+        tag = options["<tag>"]
+        filter_ = options["--filter"]
+        author = options["--author"]
+        category = options["--category"]
+        title = options["--title"]
 
         with PaperDatabase(self.database_path) as paper_database:
+            if (ref or filter_ or author or category or title) is None and (
+                tag is None or tag == []
+            ):
+                # no search criteria, export all papers
+                papers = paper_database.get_all_papers()
+            else:
 
-            if tags != []:
-                good_papers = paper_database.query_papers(
-                    paper_id=None,
-                    title=None,
-                    author=None,
-                    category=None,
-                    tags=tags,
-                    filter_=None,
+                processed_ref = process_and_validate_ref(ref, paper_database)
+                papers = paper_database.query_papers(
+                    paper_id=processed_ref,
+                    title=title,
+                    author=author,
+                    category=category,
+                    tags=tag,
+                    filter_=filter_,
                     silent=True,
                 )
-            else:
-                good_papers = paper_database.get_all_papers()
 
-            good_paper_refs = [paper_data[0] for paper_data in good_papers]
+            paper_refs = [paper_data[0] for paper_data in papers]
 
-            with open(export_path + "/xarta.bib", "w+") as f:
-                for ref in good_paper_refs:
+            with open(bibtex_file, "w+") as f:
+                for ref in paper_refs:
                     bib_info = check_arxiv_published(ref)
                     if bib_info[0]:
                         print("Writing bibtex entry for " + ref)
                         f.write(bib_info[2] + "\n\n")
 
-                print(export_path + "/xarta.bib" + " successfully written!")
+                print(bibtex_file + " successfully written!")

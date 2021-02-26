@@ -8,13 +8,14 @@ Usage:
   xarta add <ref> [--alias=<alias>] [<tag> ...]
   xarta delete <ref>
   xarta info <ref>
+  xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
+               [--category=<cat>] [--filter=<fltr>] [<tag> ...]
   xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
                [--category=<cat>] [--filter=<fltr>] [--pdf] [<tag> ...]
-  xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
+  xarta export <bibtex-file> [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
                [--category=<cat>] [--filter=<fltr>] [<tag> ...]
   xarta list (authors|tags|aliases) [--sort=<order>] [--contains=<cont>]
   xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tag> ...]
-  xarta export <export-path> [<tag> ...]
   xarta tags (set|add|remove) <ref> [<tag> ...]
   xarta alias <ref> [<alias>]
   xarta rename <tag> [<tag>]
@@ -45,11 +46,14 @@ Command descriptions:
   info         Displays information about a paper. Unlike 'xarta open', the
                paper must be in the database.
 
-  choose       Choose a paper to open from a list of papers matching some
-               criteria.
-
   browse       Prints all papers, optionally showing only those matching some
                criteria.
+
+  choose       Choose a paper to open from a list of papers matching some
+               criteria. Arguments mostly the same as browse.
+
+  export       Exports libary to a bibtex bibliography. Papers can be selected
+               using the same arguments as the browse command.
 
   list         Lists authors, tags, or aliases. Can be sorted by date,
                alphabetically, or by number of papers. Optionally print only
@@ -57,8 +61,6 @@ Command descriptions:
 
   lucky        Randomly choose a paper to open from a list of papers matching
                some criteria.
-
-  export       Exports libtrary to a bibtex bibliography.
 
   tags         Set, add, or remove tags.
 
@@ -80,8 +82,8 @@ Options:
   -h --help               Show this screen.
   --version               Show version.
   --pdf                   Open the pdf url, as opposed to the abstract url.
-  --author=<auth>         Author metadata of the database entry.
-  --title=<ttl>           Title metadata of the database entry.
+  --author=<auth>         Searches author metadata of the database entry.
+  --title=<ttl>           Searches title metadata of the database entry.
   --filter=<fltr>         Filter results using python logic. See Examples.
   --sort=<order>          Order to sort lists. Can be sorted by 'date-added',
                           'alphabetical', or by the 'number' of papers,
@@ -102,7 +104,7 @@ Examples:
   xarta choose --filter='"John" in authors and "hep-ph" in category'
   xarta list tags
   xarta list authors
-  xarta export ~/Desktop
+  xarta export ~/Desktop/xarta.bib --author='John'
   xarta delete 1704.05849
 
 
