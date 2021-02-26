@@ -147,7 +147,18 @@ def check_filter_is_sanitary(filter_, keywords_tmp):
     """Check if a filter is (mostly) safe for evaluating. If it is not, raise an
     error explaining why."""
 
-    # firstly, avoid side effects.
+    if not CONFIG["XARTA"].getboolean("enable_filters"):
+        # Potentially unsafe use of 'eval' is not  allowed in the
+        # config file. Cannot run filters
+        raise XartaError(
+            "Filters are disabled in the config file as they use potentially"
+            + 'dangerous "eval()" calls. They can be enabled by editing the'
+            + "config file ("
+            + CONFIG_FILE
+            + ")."
+        )
+
+    # avoid side effects when modifying dict.
     keywords = keywords_tmp.copy()
 
     if ";" in filter_:
