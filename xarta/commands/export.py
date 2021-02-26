@@ -1,8 +1,5 @@
 """The export command."""
 
-
-from arxivcheck.arxiv import check_arxiv_published
-
 from .base import BaseCommand
 from ..database import PaperDatabase
 from ..utils import XartaError, process_and_validate_ref
@@ -12,7 +9,6 @@ class Export(BaseCommand):
     """
     Export the database.
     Currently only exporting to a bibtex file is supported.
-    <export-path> should be a path to a directory.
     """
 
     def run(self):
@@ -48,32 +44,13 @@ class Export(BaseCommand):
 
             with open(bibtex_file, "w+") as f:
 
-                if options["arxiv"]:
-                    # print bibtex info from arxiv
+                for ref in paper_refs:
 
-                    for ref in paper_refs:
-                        bib_info = check_arxiv_published(ref)
-                        if bib_info[0]:
-                            print("Writing bibtex entry for " + ref)
-                            f.write(bib_info[2] + "\n\n")
+                    bibtex_arxiv, bibtex_inspire = paper_database.get_bibtex_data(ref)
 
-                elif options["inspire"]:
-                    # print data from inspire
-
-                    import requests
-
-                    for ref in paper_refs:
-
-                        # request data from inspire
-                        url = (
-                            "https://inspirehep.net/api/arxiv/" + ref + "?format=bibtex"
-                        )
-                        response = requests.get(url)
-
-                        # raise error if HTTPS error was returned
-                        response.raise_for_status()
-
-                        print("Writing bibtex entry for " + ref)
-                        f.write(response.text + "\n")
+                    if options["arxiv"] or bibtex_inspire == "":
+                        f.write(bibtex_arxiv + "\n\n")
+                    elif options["inspire"] or bibtex_arxiv == "":
+                        f.write(bibtex_inspire + "\n\n")
 
                 print(bibtex_file + " successfully written!")

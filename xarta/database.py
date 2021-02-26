@@ -4,7 +4,8 @@ import sqlite3
 import os
 from . import utils
 from .utils import XartaError, string_to_list, check_filter_is_sanitary, print_table
-
+import requests
+from arxivcheck.arxiv import check_arxiv_published
 
 DATA_HEADERS = ["ref", "title", "authors", "category", "tags", "alias"]
 
@@ -225,6 +226,46 @@ class PaperDatabase:
 
         if not silent:
             print(f"{paper_id} now has the following tags in the database: {new_tags}")
+
+    def get_bibtex_data(self, paper_id):
+        """Get bibtex data for a paper. If it is not in the database, try and download it."""
+
+        self.cursor.execute("SELECT bibtex_arxiv FROM papers WHERE id=?", (paper_id,))
+        bibtex_arxiv = self.cursor.fetchall()[0][0]
+
+        if bibtex_arxiv == "":
+            # get data from arxiv using the arxivcheck package
+            print("Updating arxiv bibtex for", paper_id)
+            bib_info = check_arxiv_published(paper_id)
+            if bib_info[0]:
+                bibtex_arxiv = bib_info[2] + "\n"
+                self.cursor.execute(
+                    f"""UPDATE papers SET bibtex_arxiv = ?
+                                        WHERE id = ?;""",
+                    (bibtex_arxiv, paper_id),
+                )
+
+        self.cursor.execute("SELECT bibtex_inspire FROM papers WHERE id=?", (paper_id,))
+        bibtex_inspire = self.cursor.fetchall()[0][0]
+        if bibtex_inspire == "":
+            print("Updating inspire bibtex for", paper_id)
+            # request data from inspire
+            # format should work for both old and new arxiv ids
+            url = "https://inspirehep.net/api/arxiv/" + paper_id + "?format=bibtex"
+            response = requests.get(url)
+
+            # raise error if HTTPS error was returned
+            response.raise_for_status()
+
+            bibtex_inspire = response.text
+
+            self.cursor.execute(
+                f"""UPDATE papers SET bibtex_inspire = ?
+                                    WHERE id = ?;""",
+                (bibtex_inspire, paper_id),
+            )
+
+        return (bibtex_arxiv, bibtex_inspire)
 
     def get_all_papers(self):
         """Get all papers"""
