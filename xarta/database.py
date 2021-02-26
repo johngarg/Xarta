@@ -18,7 +18,7 @@ def initialise_database(database_path):
 
     print("Creating new database at " + database_path + "...")
 
-    init_command = 'CREATE TABLE papers (id text UNIQUE, title text, authors text, category text, tags text, alias text DEFAULT "" );'
+    init_command = 'CREATE TABLE papers (id text UNIQUE, title text, authors text, category text, tags text, alias text DEFAULT "", bibtex_arxiv text DEFAULT "" , bibtex_inspire text DEFAULT ""  );'
 
     with sqlite3.connect(database_path) as connection:
         print("Initialising database...")
@@ -59,13 +59,32 @@ class PaperDatabase:
 
     def check_database_version(self):
         """Check version of database. If database was created using an older version of
-        xarta, insert new rows"""
+        xarta, insert new rows. Using total number of rows as a placeholder
+        'version' idetntifier
+
+        """
         self.cursor.execute("PRAGMA table_info(papers)")
         columns = self.cursor.fetchall()
         if len(columns) == 5:
-            # v1 database. Is missing the alias column!
-            print("Updating database file.")
-            self.cursor.execute('ALTER TABLE papers ADD alias text DEFAULT "" ')
+            # v1 database. Is missing the alias and the two bibtex columns!
+            print("Updating database file to v3.")
+            self.cursor.execute('ALTER TABLE papers ADD COLUMN alias text DEFAULT "";')
+            self.cursor.execute(
+                'ALTER TABLE papers ADD COLUMN bibtex_arxiv text DEFAULT "";'
+            )
+            self.cursor.execute(
+                'ALTER TABLE papers ADD COLUMN bibtex_inspire text DEFAULT "";'
+            )
+
+        elif len(columns) == 6:
+            # v2 database. Is missing the the two bibtex columns!
+            print("Updating database file to v3.")
+            self.cursor.execute(
+                'ALTER TABLE papers ADD COLUMN bibtex_arxiv text DEFAULT "";'
+            )
+            self.cursor.execute(
+                'ALTER TABLE papers ADD COLUMN bibtex_inspire text DEFAULT "";'
+            )
 
     def get_all_aliases(self):
         """get a list of all aliases."""
