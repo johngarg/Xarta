@@ -335,24 +335,23 @@ def process_and_validate_ref(ref, paper_database):
     return processed_ref
 
 
-def write_database_path(database_path, config_file=None):
-    """Write database location to a file, usually in HOME  """
-    if config_file is None:
-        config_file = os.environ.get("XARTACONFIG") or os.path.join(HOME, ".xarta")
-    with open(config_file, "w") as xarta_file:
+def write_database_path(database_path):
+    """Write database location to a file, located in either $XARTACONFIG,
+    $XDG_CONFIG_HOME, or $HOME"""
+    with open(CONFIG_FILE, "w") as xarta_file:
         xarta_file.write(database_path)
     print(f"Database location saved to {config_file}")
 
 
-def read_database_path(config_file=None):
-    """Read database location from a file, usually in HOME, and return database path."""
-    if config_file is None:
-        config_file = os.environ.get("XARTACONFIG") or os.path.join(HOME, ".xarta")
-    try:
-        with open(config_file, "r") as xarta_file:
-            return xarta_file.readline()
-    except FileNotFoundError:
+def read_database_path():
+    """Read and return database location from a file, located in either
+    $XARTACONFIG, $XDG_CONFIG_HOME, or $HOME"""
+
+    if not os.path.isfile(CONFIG_FILE):
         return None
+
+    with open(CONFIG_FILE, "r") as xarta_file:
+        return xarta_file.readline()
 
 
 def print_table(data, headers, select):
