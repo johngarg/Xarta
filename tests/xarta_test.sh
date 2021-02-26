@@ -48,8 +48,8 @@ xarta rename something_else
 xarta hello || error
 xarta info 1704.05849 || error
 xarta info alias2 || error
-xarta export ./xarta.bib || error
-xarta export ./xarta2.bib --author='Rebecca' || error
+xarta export arxiv ./xarta.bib || error
+xarta export inspire ./xarta2.bib --author='Rebecca' || error
 if [ "$test_open" == "True" ]; then
     xarta open 1704.05849 || error
     xarta open 1704.05849 --pdf || error
