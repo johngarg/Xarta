@@ -18,6 +18,7 @@ Usage:
   xarta tags (set|add|remove) <ref> [<tag> ...]
   xarta alias <ref> [<alias>]
   xarta rename <tag> [<tag>]
+  xarta refresh <ref>
   xarta -h | --help
   xarta --version
 
@@ -66,6 +67,9 @@ Command descriptions:
 
   rename       Rename a tag throughout the database, or delete it if no new
                tag is provided.
+
+  refresh      Refreshes database information for a given paper. Usefull if a
+               new arxiv version was released.
 
 With the exception of the --filter option, all search conditions are connected
 by logical disjunction.

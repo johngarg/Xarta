@@ -83,6 +83,24 @@ class PaperDatabase:
             return ""
         return results[0][0]
 
+    def refresh_paper(self, paper_id):
+        """Referesh arxiv info on paper (e.g., get newest version.)"""
+
+        if not self.contains(paper_id):
+            raise XartaError("This paper is not in the database.")
+
+        data = utils.get_arxiv_data(paper_id)
+        authors = utils.list_to_string(data["authors"])
+        title, category = data["title"], data["category"]
+        # tags = [utils.expand_tag(tag, data) for tag in tags]
+        insert_command = (
+            "UPDATE papers SET title = ?, authors = ?, category = ? WHERE id = ? ;"
+        )
+
+        self.cursor.execute(insert_command, (title, authors, category, paper_id))
+
+        print(f"{paper_id} information has been updated!")
+
     def add_paper(self, paper_id, tags, alias):
         """Add paper to database. paper_id is the arxiv number as a string. The
         tags are a list of strings.

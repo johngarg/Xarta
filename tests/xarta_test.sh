@@ -21,6 +21,7 @@ xarta add 1911.06334 test || error
 xarta add 1812.02651 || error
 xarta alias 1812.02651 alias1 || error
 xarta alias alias1 alias2 || error
+xarta refresh alias2 || error
 xarta browse || error
 xarta browse neutrino-mass || error
 
