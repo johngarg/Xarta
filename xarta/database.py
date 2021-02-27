@@ -253,7 +253,7 @@ class PaperDatabase:
 
         if bibtex_arxiv == "" or force_refresh:
             # get data from arxiv using the arxivcheck package
-            print("Updating arxiv bibtex for", paper_id)
+            print("Fetching arxiv bibtex for", paper_id)
             bib_info = check_arxiv_published(paper_id)
             if bib_info[0]:
                 bibtex_arxiv = bib_info[2] + "\n"
@@ -266,7 +266,7 @@ class PaperDatabase:
         self.cursor.execute("SELECT bibtex_inspire FROM papers WHERE id=?", (paper_id,))
         bibtex_inspire = self.cursor.fetchall()[0][0]
         if bibtex_inspire == "" or force_refresh:
-            print("Updating inspire bibtex for", paper_id)
+            print("Fetching inspire bibtex for", paper_id)
             # request data from inspire
             # format should work for both old and new arxiv ids
             url = "https://inspirehep.net/api/arxiv/" + paper_id + "?format=bibtex"
