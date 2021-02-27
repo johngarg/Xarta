@@ -17,8 +17,8 @@ XARTACONFIG+="/xartaconfig"
 xarta init || error
 xarta init xarta_test.db || error
 xarta add 1704.05849 --alias "JohnnyG" leptoquarks neutrino-mass flavour-anomalies || error
-xarta add 1911.06334 test || error
-xarta add 1812.02651 || error
+xarta add https://arxiv.org/pdf/1911.06334.pdf test || error
+xarta add arxiv:1812.02651 || error
 xarta alias 1812.02651 alias1 || error
 xarta alias alias1 alias2 || error
 xarta refresh alias2 || error

@@ -61,20 +61,20 @@ def is_valid_ref(ref):
     return is_new_arxiv_ref or is_old_arxiv_ref or is_arxiv_category(ref)
 
 
-def process_ref(paper_id, verbose=True):
+def process_ref(paper_id):
+    """Attempt to extract arxiv id from a string"""
+
+    # if user entered a whole url, extract only the arxiv id part
+    paper_id = re.sub("https?://arxiv\.org/(abs|pdf|ps)/", "", paper_id)
+    paper_id = re.sub("\.pdf$", "", paper_id)
+
     # strip version
-    proc_paper_id = re.sub("v[0-9]+$", "", paper_id)
-    if proc_paper_id != paper_id and verbose:
-        print("Stripping version from paper ID.")
+    paper_id = re.sub("v[0-9]+$", "", paper_id)
 
     # remove leading arxiv, i.e., such that paper_id='    arXiv: 2001.1234' is still valid
-    paper_id = proc_paper_id
-    proc_paper_id = re.sub("^\s*arxiv[:\- ]", "", paper_id, flags=re.IGNORECASE)
-    if proc_paper_id != paper_id and verbose:
-        match = re.search("^\s*arxiv[:\- ]", paper_id, flags=re.IGNORECASE)[0]
-        print("Stripping leading '" + match + "'.")
+    paper_id = re.sub("^\s*arxiv[:\- ]", "", paper_id, flags=re.IGNORECASE)
 
-    return proc_paper_id
+    return paper_id
 
 
 def arxiv_open(ref, pdf=False):
@@ -313,11 +313,14 @@ class SecretString:
 
 
 def process_and_validate_ref(ref, paper_database):
-    """Takes a reference and database, resolves aliases, and processes arxiv
-    references. Returns the processed reference or throws an error if it is not a
-    valid reference."""
+    """Takes a reference and database. First tests if the reference is an alias in
+    the database. Then attempts to extract arxiv id from the reference (which
+    might be a whole url). Then returns the processed reference or throws an error if
+    it is not a valid arxiv reference.
+    """
 
-    # if ref is not defined (as is the case for optional arguments), just return ref
+    # if ref is not defined, which can happen if this is run by a command where
+    # the reference is optional, just return ref
     if not ref:
         return ref
 
