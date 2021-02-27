@@ -33,6 +33,12 @@ class Init(BaseCommand):
             database_location = os.path.dirname(database_file)
 
         os.makedirs(database_location, exist_ok=True)
+        
+        if os.path.isdir(database_file):
+            raise XartaError('"'+database_file+'" is a directory, cannot create database.')
+            
+        if os.path.isfile(database_file):
+            raise XartaError('"'+database_file+'" already exists, cannot create database.')
 
         # initialise database
         initialise_database(database_file)
