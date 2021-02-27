@@ -35,8 +35,9 @@ Command descriptions:
   init         Initialise and write the xarta database to '<database-file>'. The
                database path is stored in a config file whoose path is either
                '$XARTACONFIG', '$XDG_HOME_CONFIG/xarta.conf', or
-               '$HOME/.xarta.conf'. If no option is given, the database is
-               written to 'xarta.db' in the same folder as the config file.
+               '$HOME/.xarta.conf'. If no <database-file> argument is given, the
+               database is written to 'xarta.db' in the same folder as the
+               config file.
 
   add          Add an arXiv ID, optionally with some tags.
 
