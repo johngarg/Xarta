@@ -1,6 +1,6 @@
 """The basic command class."""
 
-from ..utils import read_database_path
+from ..utils import get_database_path
 
 
 class BaseCommand:
@@ -8,7 +8,7 @@ class BaseCommand:
 
     def __init__(self, options, *args, **kwargs):
         self.options = options
-        self.database_path = read_database_path()
+        self.database_path = get_database_path()
         self.args = args
         self.kwargs = kwargs
 
