@@ -9,7 +9,7 @@ CERN document server as well at some stage.
 
 Suppose you want to keep the paper database in your Dropbox. Initialise it with
 ```
-xarta init ~/Dropbox/
+xarta init ~/Dropbox/xarta.db
 ```
 and add a paper to your library with kebab-case tags by topic or project:
 ```
@@ -30,26 +30,29 @@ The `xarta choose` command is similar to browse but allows you to open the paper
 in your browser with a key press.
 
 You can also export your whole library to a bibtex file, or just a subset of
-papers filtered by tags.
+papers filtered by tags, authors, category, etc.
 
 A summary of the options that are working now:
 ```
 Usage:
   xarta open <ref> [--pdf]
-  xarta init <database-location>
+  xarta init [<database-file>]
   xarta add <ref> [--alias=<alias>] [<tag> ...]
   xarta delete <ref>
   xarta info <ref>
-  xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
-               [--category=<cat>] [--filter=<fltr>] [--pdf] [<tag> ...]
   xarta browse [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
                [--category=<cat>] [--filter=<fltr>] [<tag> ...]
+  xarta choose [--author=<auth>] [--title=<ttl>] [--ref=<ref>]
+               [--category=<cat>] [--filter=<fltr>] [--pdf] [<tag> ...]
+  xarta export (arxiv|inspire) <bibtex-file> [--export-alias] [--author=<auth>]
+               [--title=<ttl>] [--ref=<ref>] [--category=<cat>]
+               [--filter=<fltr>] [<tag> ...]
   xarta list (authors|tags|aliases) [--sort=<order>] [--contains=<cont>]
   xarta lucky [--author=<auth>] [--title=<ttl>] [--pdf] [<tag> ...]
-  xarta export <export-path> [<tag> ...]
   xarta tags (set|add|remove) <ref> [<tag> ...]
   xarta alias <ref> [<alias>]
   xarta rename <tag> [<tag>]
+  xarta refresh <ref>
   xarta -h | --help
   xarta --version
 ```

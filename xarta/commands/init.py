@@ -4,7 +4,7 @@
 import os
 from .base import BaseCommand
 from ..database import initialise_database
-from ..utils import XartaError, write_database_path
+from ..utils import XartaError, write_config, CONFIG_FILE
 
 
 class Init(BaseCommand):
@@ -14,22 +14,34 @@ class Init(BaseCommand):
         """Initialises a database and updates the database location in the config
         file."""
 
-        database_location = self.options["<database-location>"]
+        database_file = self.options["<database-file>"]
 
-        # resolve relative paths, e.g., 'xarta init ./'
-        database_location = os.path.abspath(database_location)
+        if database_file is None:
+            # default to writing to same directoy as CONFIG_FILE
+            database_location = os.path.dirname(CONFIG_FILE)
 
-        # verify folder exists
-        if not os.path.isdir(database_location):
-            raise XartaError("Directory does not exist.")
+            fn = "xarta.db"
+            # if the config file starts with a '.', so will the database file.
+            if os.path.basename(CONFIG_FILE)[0] == ".":
+                fn = "." + fn
 
-        # create xarta directory
-        database_location = os.path.join(database_location, ".xarta.d")
+            database_file = os.path.join(database_location, fn)
+
+        else:
+            # resolve relative paths, e.g., 'xarta init ./'
+            database_file = os.path.abspath(database_file)
+            database_location = os.path.dirname(database_file)
+
         os.makedirs(database_location, exist_ok=True)
-        database_path = os.path.join(database_location, "db.sqlite3")
+        
+        if os.path.isdir(database_file):
+            raise XartaError('"'+database_file+'" is a directory, cannot create database.')
+            
+        if os.path.isfile(database_file):
+            raise XartaError('"'+database_file+'" already exists, cannot create database.')
 
         # initialise database
-        initialise_database(database_path)
+        initialise_database(database_file)
 
         # next update database location.
-        write_database_path(database_path)
+        write_config({"database_file": database_file})

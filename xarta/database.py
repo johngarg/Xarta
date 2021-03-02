@@ -4,7 +4,8 @@ import sqlite3
 import os
 from . import utils
 from .utils import XartaError, string_to_list, check_filter_is_sanitary, print_table
-
+import requests
+from arxivcheck.arxiv import check_arxiv_published
 
 DATA_HEADERS = ["ref", "title", "authors", "category", "tags", "alias"]
 
@@ -18,7 +19,7 @@ def initialise_database(database_path):
 
     print("Creating new database at " + database_path + "...")
 
-    init_command = 'CREATE TABLE papers (id text UNIQUE, title text, authors text, category text, tags text, alias text DEFAULT "" );'
+    init_command = 'CREATE TABLE papers (id text UNIQUE, title text, authors text, category text, tags text, alias text DEFAULT "", bibtex_arxiv text DEFAULT "" , bibtex_inspire text DEFAULT ""  );'
 
     with sqlite3.connect(database_path) as connection:
         print("Initialising database...")
@@ -59,13 +60,32 @@ class PaperDatabase:
 
     def check_database_version(self):
         """Check version of database. If database was created using an older version of
-        xarta, insert new rows"""
+        xarta, insert new rows. Using total number of rows as a placeholder
+        'version' idetntifier
+
+        """
         self.cursor.execute("PRAGMA table_info(papers)")
         columns = self.cursor.fetchall()
         if len(columns) == 5:
-            # v1 database. Is missing the alias column!
-            print("Updating database file.")
-            self.cursor.execute('ALTER TABLE papers ADD alias text DEFAULT "" ')
+            # v1 database. Is missing the alias and the two bibtex columns!
+            print("Updating database file to v3.")
+            self.cursor.execute('ALTER TABLE papers ADD COLUMN alias text DEFAULT "";')
+            self.cursor.execute(
+                'ALTER TABLE papers ADD COLUMN bibtex_arxiv text DEFAULT "";'
+            )
+            self.cursor.execute(
+                'ALTER TABLE papers ADD COLUMN bibtex_inspire text DEFAULT "";'
+            )
+
+        elif len(columns) == 6:
+            # v2 database. Is missing the the two bibtex columns!
+            print("Updating database file to v3.")
+            self.cursor.execute(
+                'ALTER TABLE papers ADD COLUMN bibtex_arxiv text DEFAULT "";'
+            )
+            self.cursor.execute(
+                'ALTER TABLE papers ADD COLUMN bibtex_inspire text DEFAULT "";'
+            )
 
     def get_all_aliases(self):
         """get a list of all aliases."""
@@ -80,8 +100,37 @@ class PaperDatabase:
         self.cursor.execute("SELECT id FROM papers WHERE alias=?", (alias,))
         results = self.cursor.fetchall()
         if not results:
-            return ""
+            return False
         return results[0][0]
+
+    def get_alias(self, paper_id):
+        """Find the alias associated with a paper. Return false if it does not have an alias."""
+        self.cursor.execute("SELECT alias FROM papers WHERE id=?", (paper_id,))
+        results = self.cursor.fetchall()
+        if not results:
+            return False
+        return results[0][0]
+
+    def refresh_paper(self, paper_id):
+        """Referesh arxiv info on paper (e.g., get newest version.)"""
+
+        if not self.contains(paper_id):
+            raise XartaError("This paper is not in the database.")
+
+        data = utils.get_arxiv_data(paper_id)
+        authors = utils.list_to_string(data["authors"])
+        title, category = data["title"], data["category"]
+        # tags = [utils.expand_tag(tag, data) for tag in tags]
+        insert_command = (
+            "UPDATE papers SET title = ?, authors = ?, category = ? WHERE id = ? ;"
+        )
+
+        self.cursor.execute(insert_command, (title, authors, category, paper_id))
+
+        # update bibtex
+        self.get_bibtex_data(paper_id, force_refresh=True)
+
+        print(f"{paper_id} information has been updated!")
 
     def add_paper(self, paper_id, tags, alias):
         """Add paper to database. paper_id is the arxiv number as a string. The
@@ -105,6 +154,9 @@ class PaperDatabase:
             insert_command, (paper_id, title, authors, category, tags, alias)
         )
 
+        # get bibtex data
+        self.get_bibtex_data(paper_id)
+
         print(f"{paper_id} added to database!")
 
     def delete_paper(self, paper_id):
@@ -123,7 +175,8 @@ class PaperDatabase:
         """Edit the alias of a paper in the database."""
 
         self.cursor.execute(
-            "UPDATE papers SET alias = ? WHERE id = ?;", (alias, paper_id),
+            "UPDATE papers SET alias = ? WHERE id = ?;",
+            (alias, paper_id),
         )
         if alias:
             print(f"{paper_id} is now aliased to: {alias}")
@@ -138,11 +191,17 @@ class PaperDatabase:
         )
         for paper in matching_papers:
             self.edit_paper_tags(
-                paper_id=paper[0], tags=[old_tag], action="remove", silent=True,
+                paper_id=paper[0],
+                tags=[old_tag],
+                action="remove",
+                silent=True,
             )
             if new_tag is not None:
                 self.edit_paper_tags(
-                    paper_id=paper[0], tags=[new_tag], action="add", silent=True,
+                    paper_id=paper[0],
+                    tags=[new_tag],
+                    action="add",
+                    silent=True,
                 )
 
         if new_tag is None:
@@ -181,6 +240,73 @@ class PaperDatabase:
 
         if not silent:
             print(f"{paper_id} now has the following tags in the database: {new_tags}")
+
+    def get_bibtex_data(self, paper_id, force_refresh=False, insert_alias=False):
+        """Get bibtex data for a paper. If it is not in the database, try and download
+        it. The function can also insert an alias-field into the bibtex output
+        for biblAtex+biber citation-aliases. If insert_alias=True, exports with
+        an alias to the arxiv ID and to the paper's alias in the database (if it
+        has one)."""
+
+        self.cursor.execute("SELECT bibtex_arxiv FROM papers WHERE id=?", (paper_id,))
+        bibtex_arxiv = self.cursor.fetchall()[0][0]
+
+        if bibtex_arxiv == "" or force_refresh:
+            # get data from arxiv using the arxivcheck package
+            print("Fetching arxiv bibtex for", paper_id)
+            bib_info = check_arxiv_published(paper_id)
+            if bib_info[0]:
+                bibtex_arxiv = bib_info[2] + "\n"
+                self.cursor.execute(
+                    f"""UPDATE papers SET bibtex_arxiv = ?
+                                        WHERE id = ?;""",
+                    (bibtex_arxiv, paper_id),
+                )
+
+        self.cursor.execute("SELECT bibtex_inspire FROM papers WHERE id=?", (paper_id,))
+        bibtex_inspire = self.cursor.fetchall()[0][0]
+        if bibtex_inspire == "" or force_refresh:
+            print("Fetching inspire bibtex for", paper_id)
+            # request data from inspire
+            # format should work for both old and new arxiv ids
+            url = "https://inspirehep.net/api/arxiv/" + paper_id + "?format=bibtex"
+            response = requests.get(url)
+
+            # raise error if HTTPS error was returned
+            response.raise_for_status()
+
+            bibtex_inspire = response.text
+
+            self.cursor.execute(
+                f"""UPDATE papers SET bibtex_inspire = ?
+                                    WHERE id = ?;""",
+                (bibtex_inspire, paper_id),
+            )
+
+        if insert_alias:
+
+            # paper_id might contain a slash (hep-ph/9....)
+            paper_id_str = paper_id.replace("/", "")
+
+            alias = self.get_alias(paper_id)
+
+            # field to be added to bibtex entry after first newline
+            id_string = "    ids = {" + paper_id_str
+            if alias:
+                id_string += ", " + alias
+            id_string += "},\n"
+
+            if bibtex_arxiv != "":
+                i = bibtex_arxiv.find("\n")
+                bibtex_arxiv = bibtex_arxiv[: i + 1] + id_string + bibtex_arxiv[i + 1 :]
+
+            if bibtex_inspire != "":
+                i = bibtex_inspire.find("\n")
+                bibtex_inspire = (
+                    bibtex_inspire[: i + 1] + id_string + bibtex_inspire[i + 1 :]
+                )
+
+        return (bibtex_arxiv, bibtex_inspire)
 
     def get_all_papers(self):
         """Get all papers"""

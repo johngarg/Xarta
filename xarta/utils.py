@@ -6,10 +6,8 @@ from urllib.error import HTTPError
 import os
 import re
 import xmltodict
+import configparser
 
-
-# get the home directory
-HOME = os.path.expanduser("~")
 
 # set of arxiv categories only used for opening the "new" page of results from
 # the command line
@@ -63,20 +61,20 @@ def is_valid_ref(ref):
     return is_new_arxiv_ref or is_old_arxiv_ref or is_arxiv_category(ref)
 
 
-def process_ref(paper_id, verbose=True):
+def process_ref(paper_id):
+    """Attempt to extract arxiv id from a string"""
+
+    # if user entered a whole url, extract only the arxiv id part
+    paper_id = re.sub("https?://arxiv\.org/(abs|pdf|ps)/", "", paper_id)
+    paper_id = re.sub("\.pdf$", "", paper_id)
+
     # strip version
-    proc_paper_id = re.sub("v[0-9]+$", "", paper_id)
-    if proc_paper_id != paper_id and verbose:
-        print("Stripping version from paper ID.")
+    paper_id = re.sub("v[0-9]+$", "", paper_id)
 
     # remove leading arxiv, i.e., such that paper_id='    arXiv: 2001.1234' is still valid
-    paper_id = proc_paper_id
-    proc_paper_id = re.sub("^\s*arxiv[:\- ]", "", paper_id, flags=re.IGNORECASE)
-    if proc_paper_id != paper_id and verbose:
-        match = re.search("^\s*arxiv[:\- ]", paper_id, flags=re.IGNORECASE)[0]
-        print("Stripping leading '" + match + "'.")
+    paper_id = re.sub("^\s*arxiv[:\- ]", "", paper_id, flags=re.IGNORECASE)
 
-    return proc_paper_id
+    return paper_id
 
 
 def arxiv_open(ref, pdf=False):
@@ -145,7 +143,18 @@ def check_filter_is_sanitary(filter_, keywords_tmp):
     """Check if a filter is (mostly) safe for evaluating. If it is not, raise an
     error explaining why."""
 
-    # firstly, avoid side effects.
+    if not CONFIG["XARTA"].getboolean("enable_filters"):
+        # Potentially unsafe use of 'eval' is not  allowed in the
+        # config file. Cannot run filters
+        raise XartaError(
+            "Filters are disabled in the config file as they use potentially "
+            + 'dangerous "eval()" calls. They can be enabled by editing the '
+            + "config file ("
+            + CONFIG_FILE
+            + ")."
+        )
+
+    # avoid side effects when modifying dict.
     keywords = keywords_tmp.copy()
 
     if ";" in filter_:
@@ -304,11 +313,14 @@ class SecretString:
 
 
 def process_and_validate_ref(ref, paper_database):
-    """Takes a reference and database, resolves aliases, and processes arxiv
-    references. Returns the processed reference or throws an error if it is not a
-    valid reference. """
+    """Takes a reference and database. First tests if the reference is an alias in
+    the database. Then attempts to extract arxiv id from the reference (which
+    might be a whole url). Then returns the processed reference or throws an error if
+    it is not a valid arxiv reference.
+    """
 
-    # if ref is not defined (as is the case for optional arguments), just return ref
+    # if ref is not defined, which can happen if this is run by a command where
+    # the reference is optional, just return ref
     if not ref:
         return ref
 
@@ -319,24 +331,28 @@ def process_and_validate_ref(ref, paper_database):
     return processed_ref
 
 
-def write_database_path(database_path, config_file=None):
-    """Write database location to a file, usually in HOME  """
-    if config_file is None:
-        config_file = os.environ.get("XARTACONFIG") or os.path.join(HOME, ".xarta")
-    with open(config_file, "w") as xarta_file:
-        xarta_file.write(database_path)
-    print(f"Database location saved to {config_file}")
+def write_config(config_dict):
+    """Update config file with config_dict"""
+    global CONFIG
+
+    if CONFIG is None:
+        # no existing config, just create a new one
+        CONFIG = configparser.ConfigParser()
+        CONFIG["XARTA"] = {"database_file": "", "enable_filters": "False"}
+
+    CONFIG["XARTA"].update(config_dict)
+
+    with open(CONFIG_FILE, "w") as f:
+        CONFIG.write(f)
+
+    print(f"Config file written to {CONFIG_FILE}")
 
 
-def read_database_path(config_file=None):
-    """Read database location from a file, usually in HOME, and return database path."""
-    if config_file is None:
-        config_file = os.environ.get("XARTACONFIG") or os.path.join(HOME, ".xarta")
-    try:
-        with open(config_file, "r") as xarta_file:
-            return xarta_file.readline()
-    except FileNotFoundError:
+def get_database_path():
+    """return database location, as obtained from config file"""
+    if CONFIG is None:
         return None
+    return CONFIG["XARTA"]["database_file"]
 
 
 def print_table(data, headers, select):
@@ -363,3 +379,38 @@ def print_table(data, headers, select):
             showindex=indices,
         )
     )
+
+
+def load_config():
+    # Get shell variables (might be NoneType)
+    home = os.environ.get("HOME")
+    config_home = os.environ.get("XDG_CONFIG_HOME")
+    xartaconfig = os.environ.get("XARTACONFIG")
+
+    # find config file location
+    if xartaconfig:
+        # $XARTACONFIG global variable exists. Use that.
+        config_file = xartaconfig
+    elif config_home:
+        # Otherwise, try $XDG_CONFIG_HOME.
+        config_file = os.path.join(config_home, "xarta.conf")
+        # If the file does not exist here, but one exists in $HOME, use that instead
+        if not os.path.isfile(CONFIG_FILE) and os.path.isfile(
+            os.path.join(home, ".xarta.conf")
+        ):
+            confif_file = os.path.join(home, ".xarta.conf")
+    else:
+        # default to a hidden file in $HOME
+        config_file = os.path.join(home, ".xarta.conf")
+
+    if not os.path.isfile(config_file):
+        return None, config_file
+
+    config = configparser.ConfigParser()
+    with open(config_file, "r") as f:
+        config.read_file(f)
+    return config, config_file
+
+
+# load config from a file
+CONFIG, CONFIG_FILE = load_config()
