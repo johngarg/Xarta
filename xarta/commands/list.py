@@ -84,7 +84,7 @@ class List(BaseCommand):
         # finnally print!
         if order != "number":
             # just print desired fields
-            print("List of " + name + ":")
+            print(f"List of {name}:")
             for item in data:
                 if cont is None:
                     print(item)
@@ -92,12 +92,9 @@ class List(BaseCommand):
                     print(item)
         else:
             # print count and field
-            print("List of " + name + " and total occurrences:")
+            print(f"List of {name} and total occurrences:")
             for num, item in zip(count, data):
                 if cont is None:
                     print(num, item)
                 elif cont in item:
                     print(num, item)
-
-    def sort_list(self, data, order):
-        """Sort a list of papers"""

@@ -24,4 +24,4 @@ class Add(BaseCommand):
             if is_valid_ref(processed_ref):
                 paper_database.add_paper(paper_id=processed_ref, tags=tags, alias=alias)
             else:
-                raise XartaError("Not a valid arXiv reference or alias: " + ref)
+                raise XartaError(f"Not a valid arXiv reference or alias: {ref}")

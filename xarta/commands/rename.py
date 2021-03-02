@@ -17,7 +17,7 @@ class Rename(BaseCommand):
             if ";" in tag:
                 raise XartaError("Invalid tag, tags cannot contain semicolons.")
         if len(tags) > 2:
-            raise XartaError("To many arguments.")
+            raise XartaError("Too many arguments.")
 
         with PaperDatabase(self.database_path) as paper_database:
             paper_database.rename_tag(*tags)

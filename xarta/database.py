@@ -14,10 +14,10 @@ def initialise_database(database_path):
     """Initialise database with empty table. If file already exists, do nothing"""
 
     if os.path.isfile(database_path):
-        print(database_path + " already exists.")
+        print(f"{database_path} already exists.")
         return
 
-    print("Creating new database at " + database_path + "...")
+    print(f"Creating new database at {database_path}...")
 
     init_command = 'CREATE TABLE papers (id text UNIQUE, title text, authors text, category text, tags text, alias text DEFAULT "", bibtex_arxiv text DEFAULT "" , bibtex_inspire text DEFAULT ""  );'
 
@@ -42,7 +42,7 @@ class PaperDatabase:
             raise XartaError("Database path not found! Have you initialised it?")
 
         if not os.path.isfile(self.path):
-            raise XartaError("Database does not exist in " + path)
+            raise XartaError(f"Database does not exist in {path}")
 
     def __enter__(self):
         self.connection = sqlite3.connect(self.path)
@@ -175,8 +175,7 @@ class PaperDatabase:
         """Edit the alias of a paper in the database."""
 
         self.cursor.execute(
-            "UPDATE papers SET alias = ? WHERE id = ?;",
-            (alias, paper_id),
+            "UPDATE papers SET alias = ? WHERE id = ?;", (alias, paper_id),
         )
         if alias:
             print(f"{paper_id} is now aliased to: {alias}")
@@ -191,17 +190,11 @@ class PaperDatabase:
         )
         for paper in matching_papers:
             self.edit_paper_tags(
-                paper_id=paper[0],
-                tags=[old_tag],
-                action="remove",
-                silent=True,
+                paper_id=paper[0], tags=[old_tag], action="remove", silent=True,
             )
             if new_tag is not None:
                 self.edit_paper_tags(
-                    paper_id=paper[0],
-                    tags=[new_tag],
-                    action="add",
-                    silent=True,
+                    paper_id=paper[0], tags=[new_tag], action="add", silent=True,
                 )
 
         if new_tag is None:
@@ -228,7 +221,7 @@ class PaperDatabase:
             old_tags = self.get_tags(paper_id)
             new_tags = [tag for tag in old_tags if tag not in tags]
         else:
-            raise XartaError("Unkown tag editing action: " + action)
+            raise XartaError(f"Unkown tag editing action: {action}")
 
         new_tags.sort(key=str.lower)
         new_tags = utils.list_to_string(new_tags)
@@ -269,7 +262,7 @@ class PaperDatabase:
             print("Fetching inspire bibtex for", paper_id)
             # request data from inspire
             # format should work for both old and new arxiv ids
-            url = "https://inspirehep.net/api/arxiv/" + paper_id + "?format=bibtex"
+            url = f"https://inspirehep.net/api/arxiv/{paper_id}?format=bibtex"
             response = requests.get(url)
 
             # raise error if HTTPS error was returned

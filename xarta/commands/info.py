@@ -3,7 +3,7 @@
 
 from .base import BaseCommand
 from ..database import PaperDatabase
-from ..utils import process_and_validate_ref
+from ..utils import process_and_validate_ref, XartaError
 
 
 class Info(BaseCommand):

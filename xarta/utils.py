@@ -81,11 +81,11 @@ def arxiv_open(ref, pdf=False):
     """Opens arxiv ref in browser."""
 
     if is_arxiv_category(ref):
-        os.system(OPEN_COMMAND + " https://arxiv.org/list/" + ref + "/new")
+        os.system(f"{OPEN_COMMAND} https://arxiv.org/list/{ref}/new")
     elif pdf:
-        os.system(OPEN_COMMAND + " https://arxiv.org/pdf/" + ref + ".pdf")
+        os.system(f"{OPEN_COMMAND} https://arxiv.org/pdf/{ref}.pdf")
     else:
-        os.system(OPEN_COMMAND + " https://arxiv.org/abs/" + ref)
+        os.system(f"{OPEN_COMMAND} https://arxiv.org/abs/{ref}")
 
 
 def get_arxiv_data(ref):
@@ -327,7 +327,7 @@ def process_and_validate_ref(ref, paper_database):
     processed_ref = paper_database.resolve_alias(ref) or ref
     processed_ref = process_ref(processed_ref)
     if not is_valid_ref(processed_ref):
-        raise XartaError("Not a valid arXiv reference or alias: " + ref)
+        raise XartaError(f"Not a valid arXiv reference or alias: {ref}")
     return processed_ref
 
 
