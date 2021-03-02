@@ -395,10 +395,10 @@ def load_config():
         # Otherwise, try $XDG_CONFIG_HOME.
         config_file = os.path.join(config_home, "xarta.conf")
         # If the file does not exist here, but one exists in $HOME, use that instead
-        if not os.path.isfile(CONFIG_FILE) and os.path.isfile(
+        if not os.path.isfile(config_file) and os.path.isfile(
             os.path.join(home, ".xarta.conf")
         ):
-            confif_file = os.path.join(home, ".xarta.conf")
+            config_file = os.path.join(home, ".xarta.conf")
     else:
         # default to a hidden file in $HOME
         config_file = os.path.join(home, ".xarta.conf")

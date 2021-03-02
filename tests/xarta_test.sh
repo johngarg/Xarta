@@ -4,15 +4,17 @@
 # Note that this does not test things like formatting for commands like choose and browse.
 
 function error {
-    echo -e "\n\e[1;31m  ERROR \e[0m\n\n"
+    # echo -e "\n\e[1;31m  ERROR \e[0m\n\n"
+    echo -e "\n\033[91m ERROR \033[0m\n\n"
 }
 
 test_open=False
 
 
 #dont overwrite users ~/.xarta --> use a config file in CWD
-XARTACONFIG=$(pwd)
+XARTACONFIG=$(pwd) 
 XARTACONFIG+="/xartaconfig"
+export XARTACONFIG
 
 xarta init || error
 xarta init xarta_test.db || error
