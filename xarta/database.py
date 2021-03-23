@@ -246,7 +246,7 @@ class PaperDatabase:
 
         if bibtex_arxiv == "" or force_refresh:
             # get data from arxiv using the arxivcheck package
-            print("Fetching arxiv bibtex for", paper_id)
+            print(f"Fetching arXiv bibtex for {paper_id}")
             bib_info = check_arxiv_published(paper_id)
             if bib_info[0]:
                 bibtex_arxiv = bib_info[2] + "\n"
@@ -265,10 +265,15 @@ class PaperDatabase:
             url = f"https://inspirehep.net/api/arxiv/{paper_id}?format=bibtex"
             response = requests.get(url)
 
-            # raise error if HTTPS error was returned
-            response.raise_for_status()
-
-            bibtex_inspire = response.text
+            try:
+                # Raise error if HTTPS error was returned
+                response.raise_for_status()
+                bibtex_inspire = response.text
+                print("Inspire bibtex information not found.")
+            except requests.exceptions.HTTPError:
+                # For some reason the bibtex information was not found (the
+                # paper may only recently have appeared on the arXiv)
+                bibtex_inspire = ""
 
             self.cursor.execute(
                 f"""UPDATE papers SET bibtex_inspire = ?
